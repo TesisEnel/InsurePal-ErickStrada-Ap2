@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
-    id("com.google.dagger.hilt.android") version "2.57.2"
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose")
     alias(libs.plugins.kotlinx.serialization)
 }
@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.compose.material3)
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
