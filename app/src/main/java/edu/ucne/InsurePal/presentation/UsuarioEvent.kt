@@ -15,4 +15,5 @@ sealed interface UsuarioEvent
     data class actualizar(val usuario: Usuario) : UsuarioEvent
 
     data object new: UsuarioEvent
+    data object onLoginClick : UsuarioEvent
 }
