@@ -1,19 +1,35 @@
 package edu.ucne.InsurePal.presentation.usuario
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.collectLatest
-import edu.ucne.InsurePal.domain.Usuario
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,12 +117,7 @@ fun UsuarioScreenContent(
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = {
-                val usuario = Usuario(
-                    usuarioId = 0,
-                    userName = uiState.userName,
-                    password = uiState.password ?: ""
-                )
-                onEvent(UsuarioEvent.crear(usuario))
+                onEvent(UsuarioEvent.onLoginClick)
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading
@@ -140,12 +151,6 @@ fun UsuarioScreenPreview() {
         userName = "juan_perez",
         password = "123",
         isLoading = false
-    )
-
-    val loadingState = UsuarioUiState(
-        userName = "ana_g",
-        password = "password123",
-        isLoading = true
     )
     UsuarioScreenContent(
         padding = PaddingValues(0.dp),
