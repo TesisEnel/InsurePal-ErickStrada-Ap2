@@ -1,4 +1,5 @@
-package edu.ucne.InsurePal.presentation
+package edu.ucne.InsurePal.presentation.usuario
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -7,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +54,14 @@ fun UsuarioScreenContent(
     uiState: UsuarioUiState,
     onEvent: (UsuarioEvent) -> Unit
 ) {
+
+    if (uiState.isDialogVisible) {
+        DialogoRegistro(
+            uiState = uiState,
+            onEvent = onEvent
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,7 +72,7 @@ fun UsuarioScreenContent(
     ) {
 
         Text(
-            text = "Crear Cuenta",
+            text = "Iniciar sesión",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -101,8 +111,20 @@ fun UsuarioScreenContent(
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading
         ) {
-            Text(text = "Registrar")
+            Text(text = "Iniciar sesión")
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+            onClick = {
+                onEvent(UsuarioEvent.showRegistrationDialog)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isLoading
+        ) {
+            Text(text = "Registrate")
+        }
+
 
         if (uiState.isLoading) {
             Spacer(modifier = Modifier.height(16.dp))
