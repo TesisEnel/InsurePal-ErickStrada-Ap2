@@ -73,14 +73,7 @@ class UsuarioViewModel @Inject constructor(
                 clearForm()
                 _state.value = _state.value.copy()
             }
-            is UsuarioEvent.onLoginClick -> login()
-            UsuarioEvent.onLoginClick -> {
-                viewModelScope.launch {
-                    // TODO: Añadir lógica de INICIO DE SESIÓN aquí
-                    // Por ejemplo, verificar _state.value.userName y _state.value.password
-                    _state.update { it.copy(userMessage = "Lógica de login no implementada") }
-                }
-            }
+            UsuarioEvent.onLoginClick -> login()
 
             UsuarioEvent.showRegistrationDialog -> {
                 _state.update { it.copy(isDialogVisible = true) }
@@ -146,14 +139,50 @@ class UsuarioViewModel @Inject constructor(
 
     private fun login() {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, userMessage = null) }
+
+            val userName = _state.value.userName
+            val password = _state.value.password
+
+            obtenerLista().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        val user = resource.data?.find { it.userName == userName }
+
+                        when {
+                            user == null -> {
+                                _state.update {
+                                    it.copy(isLoading = false, userMessage = "Usuario no encontrado")
+                                }
+                            }
+                            user.password == password -> {
+                                _state.update {
+                                    it.copy(isLoading = false, userMessage = "Inicio de sesión exitoso")
+                                }
+                            }
+                            else -> {
+                                _state.update {
+                                    it.copy(isLoading = false, userMessage = "Contraseña incorrecta")
+                                }
+                            }
+                        }
+                    }
+                    is Resource.Error -> {
+                        _state.update {
+                            it.copy(isLoading = false, userMessage = resource.message ?: "Error desconocido")
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isLoading = true) }
+                    }
+                }
+            }
         }
     }
 
     private fun crearUsuario(usuario: Usuario) {
         viewModelScope.launch {
-            val result = guardar(id = 0,usuario)
-
-            when (result) {
+            when (val result = guardar(id = 0,usuario)) {
                 is Resource.Success -> {
                     _state.update {
                         it.copy(
