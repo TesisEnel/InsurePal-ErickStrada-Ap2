@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "edu.ucne.jugadorestictactoe"
+    namespace = "edu.ucne.InsurePal"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "edu.ucne.jugadorestictactoe"
+        applicationId = "edu.ucne.InsurePal"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
@@ -63,13 +64,14 @@ dependencies {
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.8")
     implementation(libs.androidx.foundation)
 
-    //optional
+
     implementation(libs.androidx.room.ktx)
     implementation(libs.material3)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.material.v131) // Usa la última versión
+    implementation(libs.androidx.material.v131)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
