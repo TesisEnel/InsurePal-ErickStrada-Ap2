@@ -6,7 +6,7 @@ import edu.ucne.InsurePal.domain.Usuario
 import edu.ucne.InsurePal.domain.UsuarioRepository
 import javax.inject.Inject
 
-class saveUsuarioUseCase @Inject constructor(
+class SaveUsuarioUseCase @Inject constructor(
     private val repository: UsuarioRepository
 ) {
     suspend operator fun invoke(id: Int = 0, usuario: Usuario): Resource<Usuario?> {

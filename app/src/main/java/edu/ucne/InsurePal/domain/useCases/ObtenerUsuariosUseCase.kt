@@ -6,7 +6,7 @@ import edu.ucne.InsurePal.domain.UsuarioRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class obtenerUsuariosUseCase @Inject constructor(
+class ObtenerUsuariosUseCase @Inject constructor(
     private val repository: UsuarioRepository
 ) {
     suspend operator fun invoke(): Flow<Resource<List<Usuario>>> = repository.getUsuarios()
