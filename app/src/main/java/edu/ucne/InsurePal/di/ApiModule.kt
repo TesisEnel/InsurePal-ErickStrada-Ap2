@@ -9,7 +9,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.InsurePal.data.remote.usuario.UsuarioApiService
 import edu.ucne.InsurePal.data.remote.usuario.UsuarioRepositoryImpl
-import edu.ucne.InsurePal.domain.UsuarioRepository
+import edu.ucne.InsurePal.domain.usuario.UsuarioRepository
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
