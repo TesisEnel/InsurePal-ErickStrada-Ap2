@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UsuarioScreen(
+fun LoginScreen(
     viewModel: UsuarioViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.state.collectAsState()
