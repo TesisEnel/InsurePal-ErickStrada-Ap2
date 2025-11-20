@@ -1,7 +1,7 @@
 package edu.ucne.InsurePal.presentation.polizas
 
 import android.content.res.Configuration
-import edu.ucne.InsurePal.domain.polizas.SeguroVehiculo
+import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
