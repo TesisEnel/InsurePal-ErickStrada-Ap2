@@ -2,8 +2,8 @@ package edu.ucne.InsurePal.domain
 
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.toRequest
-import edu.ucne.InsurePal.domain.usuario.Usuario
-import edu.ucne.InsurePal.domain.usuario.UsuarioRepository
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import edu.ucne.InsurePal.domain.usuario.repository.UsuarioRepository
 import edu.ucne.InsurePal.domain.usuario.useCases.SaveUsuarioUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify

@@ -1,6 +1,6 @@
 package edu.ucne.InsurePal.presentation.usuario
 
-import edu.ucne.InsurePal.domain.usuario.Usuario
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
 
 data class UsuarioUiState (
     val isLoading: Boolean = false,

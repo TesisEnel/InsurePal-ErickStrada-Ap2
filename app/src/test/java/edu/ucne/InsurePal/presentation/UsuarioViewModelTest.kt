@@ -1,7 +1,7 @@
 package edu.ucne.InsurePal.presentation.usuario
 
 import edu.ucne.InsurePal.data.Resource
-import edu.ucne.InsurePal.domain.usuario.Usuario
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
 import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuarioUseCase
 import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuariosUseCase
 import edu.ucne.InsurePal.domain.usuario.useCases.SaveUsuarioUseCase
