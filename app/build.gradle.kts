@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
+
     implementation(libs.androidx.room.ktx)
     implementation(libs.material3)
     implementation(libs.androidx.compose.material3)
