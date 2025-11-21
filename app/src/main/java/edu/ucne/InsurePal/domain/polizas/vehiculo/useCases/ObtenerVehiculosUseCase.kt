@@ -9,5 +9,5 @@ import javax.inject.Inject
 class ObtenerVehiculosUseCase @Inject constructor(
     private val repository: SeguroVehiculoRepository
 ) {
-    suspend operator fun invoke(): Flow<Resource<List<SeguroVehiculo>>> = repository.getVehiculos()
+    suspend operator fun invoke(usuarioId : Int): Flow<Resource<List<SeguroVehiculo>>> = repository.getVehiculos(usuarioId)
 }
