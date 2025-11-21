@@ -38,7 +38,9 @@ data class QuickAction(
 
 
 @Composable
-fun InsuranceHomeScreen() {
+fun InsuranceHomeScreen(
+    onActionClick: (String) -> Unit
+) {
     val policies = listOf(
         Policy("Seguro de Auto", "POL-8821", "Activo", Icons.Default.DirectionsCar, Color(0xFF4CAF50)),
         Policy("Seguro de Hogar", "POL-1102", "Pago Pendiente", Icons.Default.Home, Color(0xFF2196F3)),
@@ -87,7 +89,8 @@ fun InsuranceHomeScreen() {
             }
             item {
                 SectionTitle("Acciones Rápidas")
-                QuickActionsGrid(actions)
+                QuickActionsGrid(actions,
+                    onItemClick = onActionClick)
             }
 
             item {
@@ -173,24 +176,31 @@ fun PolicyCard(policy: Policy) {
 }
 
 @Composable
-fun QuickActionsGrid(actions: List<QuickAction>) {
+fun QuickActionsGrid(
+    actions: List<QuickAction>,
+    onItemClick: (String) -> Unit
+) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            ActionItem(actions[0], Modifier.weight(1f))
-            ActionItem(actions[1], Modifier.weight(1f))
+            ActionItem(actions[0], Modifier.weight(1f), onItemClick)
+            ActionItem(actions[1], Modifier.weight(1f), onItemClick)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            ActionItem(actions[2], Modifier.weight(1f))
-            ActionItem(actions[3], Modifier.weight(1f))
+            ActionItem(actions[2], Modifier.weight(1f), onItemClick)
+            ActionItem(actions[3], Modifier.weight(1f), onItemClick)
         }
     }
 }
 
 @Composable
-fun ActionItem(action: QuickAction, modifier: Modifier = Modifier) {
+fun ActionItem(
+    action: QuickAction,
+    modifier: Modifier = Modifier,
+    onClick: (String) -> Unit
+) {
     Button(
-        onClick = { /* Navegar */ },
+        onClick = { onClick(action.title) },
         modifier = modifier.height(80.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
@@ -251,7 +261,7 @@ fun PromoBanner() {
 @Composable
 fun InsuranceHomeScreenPreview() {
     InsurePalTheme {
-        InsuranceHomeScreen()
+        InsuranceHomeScreen(onActionClick = {})
     }
 }
 
@@ -264,6 +274,6 @@ fun InsuranceHomeScreenPreview() {
 @Composable
 fun InsuranceHomeScreenDarkPreview() {
     MaterialTheme {
-        InsuranceHomeScreen()
+        InsuranceHomeScreen(onActionClick = {})
     }
 }
