@@ -22,13 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 
-
 data class Policy(
     val name: String,
     val id: String,
     val status: String,
     val icon: ImageVector,
-    val color: Color
+    val color: Color // Mantenemos esto si quieres colores específicos de marca por tipo de seguro, o lo cambiamos a null para usar Theme
 )
 
 data class QuickAction(
@@ -36,15 +35,15 @@ data class QuickAction(
     val icon: ImageVector
 )
 
-
 @Composable
 fun InsuranceHomeScreen(
     onActionClick: (String) -> Unit
 ) {
+    // Nota: Usamos los colores del tema para los iconos de las pólizas para mantener consistencia
     val policies = listOf(
-        Policy("Seguro de Auto", "POL-8821", "Activo", Icons.Default.DirectionsCar, Color(0xFF4CAF50)),
-        Policy("Seguro de Hogar", "POL-1102", "Pago Pendiente", Icons.Default.Home, Color(0xFF2196F3)),
-        Policy("Gastos Médicos", "POL-3341", "Activo", Icons.Default.MedicalServices, Color(0xFFE91E63))
+        Policy("Seguro de Auto", "POL-8821", "Activo", Icons.Default.DirectionsCar, MaterialTheme.colorScheme.primary),
+        Policy("Seguro de Hogar", "POL-1102", "Pago Pendiente", Icons.Default.Home, MaterialTheme.colorScheme.secondary),
+        Policy("Gastos Médicos", "POL-3341", "Activo", Icons.Default.MedicalServices, MaterialTheme.colorScheme.tertiary)
     )
 
     val actions = listOf(
@@ -56,7 +55,7 @@ fun InsuranceHomeScreen(
 
     Scaffold(
         topBar = { HomeHeader() },
-        containerColor = Color(0xFFF5F7FA)
+        containerColor = MaterialTheme.colorScheme.background // COLOR DINÁMICO DEL TEMA
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -72,7 +71,7 @@ fun InsuranceHomeScreen(
                     text = "¿Qué deseas proteger hoy?",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E)
+                    color = MaterialTheme.colorScheme.onBackground // COLOR DINÁMICO
                 )
             }
 
@@ -89,8 +88,10 @@ fun InsuranceHomeScreen(
             }
             item {
                 SectionTitle("Acciones Rápidas")
-                QuickActionsGrid(actions,
-                    onItemClick = onActionClick)
+                QuickActionsGrid(
+                    actions = actions,
+                    onItemClick = onActionClick
+                )
             }
 
             item {
@@ -100,7 +101,6 @@ fun InsuranceHomeScreen(
         }
     }
 }
-
 
 @Composable
 fun HomeHeader() {
@@ -115,16 +115,21 @@ fun HomeHeader() {
             Text(
                 text = "Bienvenido de nuevo",
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
                 fontWeight = FontWeight.SemiBold
             )
         }
         IconButton(
             onClick = { /* TODO: Abrir notificaciones */ },
             modifier = Modifier
-                .background(Color.White, CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape) // COLOR DINÁMICO
                 .size(48.dp)
         ) {
-            Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Alertas")
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Alertas",
+                tint = MaterialTheme.colorScheme.onSurface // COLOR DINÁMICO
+            )
         }
     }
 }
@@ -132,8 +137,10 @@ fun HomeHeader() {
 @Composable
 fun PolicyCard(policy: Policy) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer // COLOR DINÁMICO (Tarjeta elevada)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .width(280.dp)
@@ -149,27 +156,53 @@ fun PolicyCard(policy: Policy) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Icono de la póliza
                 Box(
                     modifier = Modifier
-                        .background(policy.color.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                        .padding(8.dp)
+                        .background(policy.color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .padding(10.dp)
                 ) {
-                    Icon(imageVector = policy.icon, contentDescription = null, tint = policy.color)
+                    Icon(
+                        imageVector = policy.icon,
+                        contentDescription = null,
+                        tint = policy.color
+                    )
                 }
+
+                // Chip de estado dinámico
+                val chipContainerColor = if (policy.status == "Activo")
+                    MaterialTheme.colorScheme.primaryContainer
+                else
+                    MaterialTheme.colorScheme.errorContainer
+
+                val chipContentColor = if (policy.status == "Activo")
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
+                    MaterialTheme.colorScheme.onErrorContainer
 
                 SuggestionChip(
                     onClick = {},
                     label = { Text(policy.status, fontSize = 10.sp) },
                     colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = if(policy.status == "Activo") Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
-                        labelColor = Color.Black
+                        containerColor = chipContainerColor,
+                        labelColor = chipContentColor
                     ),
-                    border = null
+                    border = null,
+                    shape = CircleShape
                 )
             }
             Column {
-                Text(text = policy.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = policy.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(
+                    text = policy.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface // COLOR DINÁMICO
+                )
+                Text(
+                    text = policy.id,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // COLOR DINÁMICO (Gris del tema)
+                )
             }
         }
     }
@@ -202,14 +235,26 @@ fun ActionItem(
     Button(
         onClick = { onClick(action.title) },
         modifier = modifier.height(80.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+        shape = MaterialTheme.shapes.medium, // Usa la forma definida en el tema (Theme.kt)
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, // COLOR DINÁMICO
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = action.icon, contentDescription = null, tint = Color(0xFF3F51B5))
+            Icon(
+                imageVector = action.icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary // COLOR DINÁMICO
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = action.title, color = Color.Black, fontSize = 12.sp, maxLines = 1)
+            Text(
+                text = action.title,
+                color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1
+            )
         }
     }
 }
@@ -219,6 +264,7 @@ fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(bottom = 12.dp, top = 8.dp)
     )
@@ -227,7 +273,9 @@ fun SectionTitle(title: String) {
 @Composable
 fun PromoBanner() {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF212121)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.inverseSurface // Fondo oscuro del tema
+        ),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -240,13 +288,22 @@ fun PromoBanner() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Asegura tu mascota", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("15% OFF este mes", color = Color(0xFFFFD700), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Asegura tu mascota",
+                    color = MaterialTheme.colorScheme.inverseOnSurface, // Texto claro sobre fondo oscuro
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "15% OFF este mes",
+                    color = MaterialTheme.colorScheme.tertiaryContainer, // Color de acento
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
             Icon(
                 imageVector = Icons.Default.Pets,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.inverseOnSurface, // Icono claro
                 modifier = Modifier.size(48.dp)
             )
         }
