@@ -2,7 +2,7 @@ package edu.ucne.InsurePal.domain.polizas.vehiculo.model
 
 import java.time.LocalDate
 
-class SeguroVehiculo (
+data class SeguroVehiculo (
     val idPoliza: String? = null,
     val name: String,
     val status: String,
@@ -12,3 +12,4 @@ class SeguroVehiculo (
     val modeloVehiculo: String,
     val coverageType: String
 )
+
