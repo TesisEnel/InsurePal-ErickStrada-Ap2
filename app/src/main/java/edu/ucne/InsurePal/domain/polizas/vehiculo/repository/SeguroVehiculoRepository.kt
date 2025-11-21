@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SeguroVehiculoRepository {
     suspend fun getVehiculos(): Flow<Resource<List<SeguroVehiculo>>>
-    suspend fun getVehiculo(id: Int?): Flow<Resource<SeguroVehiculo>>
+    suspend fun getVehiculo(id: String): Flow<Resource<SeguroVehiculo>>
     suspend fun postVehiculo(req: SeguroVehiculoRequest): Resource<SeguroVehiculo>
-    suspend fun putVehiculo(id: Int, req: SeguroVehiculoRequest): Resource<Unit>
+    suspend fun putVehiculo(id: String, req: SeguroVehiculoRequest): Resource<Unit>
 }
