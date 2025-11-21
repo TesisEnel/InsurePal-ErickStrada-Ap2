@@ -1,6 +1,5 @@
 package edu.ucne.InsurePal.presentation.navigation
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
