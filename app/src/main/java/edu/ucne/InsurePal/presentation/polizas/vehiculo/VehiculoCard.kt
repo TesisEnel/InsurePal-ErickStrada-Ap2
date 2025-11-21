@@ -97,7 +97,7 @@ fun AutoPolicyCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = policy.modeloVehiculo,
+                text = policy.modelo,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -127,7 +127,7 @@ fun AutoPolicyCard(
                 }
 
                 Text(
-                    text = "Vence: ${policy.expirationDate.format(DateTimeFormatter.ofPattern("MMM yyyy"))}",
+                    text = "Vence: ${policy.expirationDate?.format(DateTimeFormatter.ofPattern("MMM yyyy"))}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -139,10 +139,16 @@ fun AutoPolicyCard(
 
 
 private val sampleAutoPolicyActive = SeguroVehiculo(
+    usuarioId = 1,
     idPoliza = "123",
     name = "Mi Toyota Corolla",
-    modeloVehiculo = "Toyota Corolla LE 2023",
+    marca = "Toyota",
+    modelo = "Corolla LE",
+    anio = "2023",
+    color = "Blanco Perla",
     placa = "A-456789",
+    chasis = "JHTBD34567890123",
+    valorMercado = 1500000.0,
     coverageType = "Full Cobertura",
     status = "Activo",
     expirationDate = LocalDate.now().plusMonths(5)
