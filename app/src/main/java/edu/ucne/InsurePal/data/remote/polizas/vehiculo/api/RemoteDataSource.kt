@@ -27,7 +27,7 @@ class RemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun update(id: Int, request: SeguroVehiculoRequest): Resource<Unit> {
+    suspend fun update(id: String, request: SeguroVehiculoRequest): Resource<Unit> {
         return try {
             val response = api.putVehiculo(id, request)
             if (response.isSuccessful) {
@@ -40,7 +40,7 @@ class RemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun getVehiculo(id: Int): Resource<SeguroVehiculoResponse>{
+    suspend fun getVehiculo(id: String): Resource<SeguroVehiculoResponse>{
         return try{
             val response = api.getVehiculo(id)
             if(response.isSuccessful){
