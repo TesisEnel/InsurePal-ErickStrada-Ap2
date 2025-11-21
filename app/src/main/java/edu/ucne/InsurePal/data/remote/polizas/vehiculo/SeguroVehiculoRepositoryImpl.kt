@@ -46,7 +46,7 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun putVehiculo(id: Int, req: SeguroVehiculoRequest): Resource<Unit> {
+    override suspend fun putVehiculo(id: String, req: SeguroVehiculoRequest): Resource<Unit> {
         return when(val result = remoteDataSource.update(id, req)){
             is Resource.Success -> {
                 Resource.Success(Unit)
@@ -60,7 +60,7 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVehiculo(id: Int?): Flow<Resource<SeguroVehiculo>> = flow {
+    override suspend fun getVehiculo(id: String?): Flow<Resource<SeguroVehiculo>> = flow {
         if (id == null) {
             emit(Resource.Error("ID de vehiculo no puede ser nulo"))
             return@flow
@@ -84,4 +84,19 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
             }
         }
     }
+    override suspend fun delete(id: String): Resource<Unit> {
+        return when (val result = remoteDataSource.deleteVehiculo(id)) {
+            is Resource.Success -> {
+                Resource.Success(Unit)
+            }
+            is Resource.Error -> {
+                Resource.Error(result.message ?: "Error al eliminar el vehículo")
+            }
+            else -> {
+                Resource.Error("Error desconocido al eliminar")
+            }
+        }
+    }
+
+
 }
