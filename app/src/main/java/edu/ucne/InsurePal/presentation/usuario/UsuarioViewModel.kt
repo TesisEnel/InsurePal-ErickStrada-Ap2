@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
+import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.domain.usuario.model.Usuario
 import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuarioUseCase
 import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuariosUseCase
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class UsuarioViewModel @Inject constructor(
     private val guardar : SaveUsuarioUseCase,
     private val obtener : ObtenerUsuarioUseCase,
-    private val obtenerLista : ObtenerUsuariosUseCase
+    private val obtenerLista : ObtenerUsuariosUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
     private val _state = MutableStateFlow(UsuarioUiState(isLoading = true))
     val state: StateFlow<UsuarioUiState> = _state.asStateFlow()
@@ -156,6 +158,10 @@ class UsuarioViewModel @Inject constructor(
                                 }
                             }
                             user.password == password -> {
+                                user.usuarioId?.let { id ->
+                                    userPreferences.saveUser(id, user.userName)
+                                    Log.d("InsurePal_Test", "Guardando ID: $id y Nombre: ${user.userName}")
+                                }
 
                                 _state.update {
                                     it.copy(
