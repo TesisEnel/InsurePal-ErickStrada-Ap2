@@ -4,11 +4,16 @@ import java.time.LocalDate
 
 data class SeguroVehiculoResponse(
     val idPoliza: String? = null,
+    val usuarioId: Int,
     val name: String,
-    val status: String,
-    val expirationDate: LocalDate,
-
+    val marca: String,
+    val modelo: String,
+    val anio: String,
+    val color: String,
     val placa: String,
-    val modeloVehiculo: String,
-    val coverageType: String
+    val chasis: String,
+    val valorMercado: Double,
+    val coverageType: String,
+    val status: String = "Cotizando",
+    val expirationDate: LocalDate? = null
 )
