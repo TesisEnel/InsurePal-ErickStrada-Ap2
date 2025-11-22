@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.polizas.vehiculo.registro // Ajusta el paquete si es necesario
+package edu.ucne.InsurePal.presentation.polizas.vehiculo
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -21,11 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoEvent
-import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoRegistroViewModel
-import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoUiState
-import edu.ucne.InsurePal.ui.theme.InsurePalTheme // Asegúrate de importar tu tema
-
+import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 
 @Composable
 fun VehiculoRegistroScreen(
@@ -55,7 +51,6 @@ fun VehiculoRegistroScreen(
         onNavigateBack = onNavigateBack
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,21 +123,22 @@ fun VehiculoRegistroContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedTextField(
-                    value = state.marca,
-                    onValueChange = { onEvent(VehiculoEvent.OnMarcaChanged(it)) },
-                    label = { Text("Marca") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+
+                AppDropdown(
+                    label = "Marca",
+                    items = state.marcasDisponibles,
+                    selectedItem = state.marca,
+                    onItemSelected = { onEvent(VehiculoEvent.OnMarcaChanged(it)) },
+                    modifier = Modifier.weight(1f)
                 )
-                OutlinedTextField(
-                    value = state.modelo,
-                    onValueChange = { onEvent(VehiculoEvent.OnModeloChanged(it)) },
-                    label = { Text("Modelo") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+
+
+                AppDropdown(
+                    label = "Modelo",
+                    items = state.modelosDisponibles,
+                    selectedItem = state.modelo,
+                    onItemSelected = { onEvent(VehiculoEvent.OnModeloChanged(it)) },
+                    modifier = Modifier.weight(1f)
                 )
             }
 
@@ -176,7 +172,6 @@ fun VehiculoRegistroContent(
                 color = MaterialTheme.colorScheme.primary
             )
 
-
             OutlinedTextField(
                 value = state.placa,
                 onValueChange = { onEvent(VehiculoEvent.OnPlacaChanged(it)) },
@@ -195,14 +190,24 @@ fun VehiculoRegistroContent(
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
             )
 
+
             OutlinedTextField(
                 value = state.valorMercado,
-                onValueChange = { onEvent(VehiculoEvent.OnValorChanged(it)) },
-                label = { Text("Valor de Mercado") },
+                onValueChange = { },
+                label = { Text("Valor de Mercado (Estimado)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                readOnly = true,
                 prefix = { Text("RD$ ") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
+                supportingText = {
+                    if (state.valorMercado.isNotEmpty()) {
+                        Text("Calculado automáticamente según marca, modelo y año.")
+                    }
+                }
             )
 
             Divider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -226,7 +231,6 @@ fun VehiculoRegistroContent(
                         label = { Text(tipo) },
                         leadingIcon = if (state.coverageType == tipo) {
                             {
-                                // Cambié el icono a Check que tiene más sentido
                                 Icon(
                                     Icons.Default.Check,
                                     contentDescription = null,
@@ -243,14 +247,13 @@ fun VehiculoRegistroContent(
     }
 }
 
-// 3. PREVIEWS
 @Preview(name = "Formulario Vacío", showSystemUi = true)
 @Composable
 fun VehiculoRegistroScreenPreview() {
     InsurePalTheme {
         VehiculoRegistroContent(
-            state = VehiculoUiState(), // Estado inicial vacío
-            onEvent = {}, // Lambda vacía, no hace nada al interactuar
+            state = VehiculoUiState(),
+            onEvent = {},
             onNavigateBack = {}
         )
     }
@@ -262,15 +265,17 @@ fun VehiculoRegistroScreenFilledPreview() {
     InsurePalTheme {
         VehiculoRegistroContent(
             state = VehiculoUiState(
-                isLoading = true, // Probamos el loading en el FAB
-                name = "El Consentido",
+                isLoading = true,
+                name = "El negrito",
                 marca = "Toyota",
                 modelo = "Corolla",
                 anio = "2023",
                 color = "Rojo",
                 placa = "A-123456",
                 valorMercado = "1500000",
-                coverageType = "Full Cobertura"
+                coverageType = "Full Cobertura",
+                marcasDisponibles = listOf("Toyota", "Honda"),
+                modelosDisponibles = listOf("Corolla", "Camry")
             ),
             onEvent = {},
             onNavigateBack = {}
