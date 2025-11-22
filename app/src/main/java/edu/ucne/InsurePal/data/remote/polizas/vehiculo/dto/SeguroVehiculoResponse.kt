@@ -15,5 +15,5 @@ data class SeguroVehiculoResponse(
     val valorMercado: Double,
     val coverageType: String,
     val status: String = "Cotizando",
-    val expirationDate: LocalDate? = null
+    val expirationDate: String? = ""
 )
