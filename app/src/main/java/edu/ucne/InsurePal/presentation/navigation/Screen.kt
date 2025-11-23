@@ -12,4 +12,10 @@ sealed class Screen(val route: String) {
 
     object VehiculoRegistro : Screen("vehiculo_registro")
 
+    data object CotizacionDetalle : Screen("cotizacion_detalle/{vehiculoId}") {
+        fun passId(vehiculoId: String): String {
+            return "cotizacion_detalle/$vehiculoId"
+        }
+    }
+
 }
