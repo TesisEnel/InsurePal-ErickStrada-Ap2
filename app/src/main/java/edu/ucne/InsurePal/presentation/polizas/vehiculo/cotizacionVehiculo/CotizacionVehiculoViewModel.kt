@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.CalcularPrimaUseCase
+import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.EliminarSeguroVehiculoUseCase
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.GetVehiculoUseCase
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,15 +20,15 @@ import javax.inject.Inject
 class CotizacionVehiculoViewModel @Inject constructor(
     private val getVehiculoUseCase: GetVehiculoUseCase,
     private val calcularPrimaUseCase: CalcularPrimaUseCase,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val eliminar : EliminarSeguroVehiculoUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CotizacionVehiculoUiState())
     val state = _state.asStateFlow()
 
+    val vehiculoId = savedStateHandle.get<String>("vehiculoId")
     init {
-        val vehiculoId = savedStateHandle.get<String>("vehiculoId")
-
         if (vehiculoId != null) {
             cargarDatosCotizacion(vehiculoId)
         } else {
@@ -39,8 +40,25 @@ class CotizacionVehiculoViewModel @Inject constructor(
         when(event) {
             CotizacionVehiculoEvent.OnContinuarPagoClick -> {
             }
+            CotizacionVehiculoEvent.OnVolverClick -> {
+                eliminarVehiculoActual()
+            }
         }
     }
+
+    private fun eliminarVehiculoActual() {
+        viewModelScope.launch {
+            vehiculoId?.let { id ->
+                try {
+                    eliminar(id)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+
 
     private fun cargarDatosCotizacion(id: String) {
         viewModelScope.launch {
