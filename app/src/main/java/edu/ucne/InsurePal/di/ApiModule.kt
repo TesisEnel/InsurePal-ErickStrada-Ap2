@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.data.local.pago.PagoRepositoryImpl
+import edu.ucne.InsurePal.data.remote.pago.PagoApiService
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.SeguroVehiculoRepositoryImpl
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.VehiculoRepositoryImpl
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.api.SeguroVehiculoApiService
@@ -76,6 +77,16 @@ object Module {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(UsuarioApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePagoApiService(moshi: Moshi): PagoApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(PagoApiService::class.java)
     }
 
     @Provides
