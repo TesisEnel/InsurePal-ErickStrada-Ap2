@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
-import edu.ucne.InsurePal.presentation.polizas.cotizacion.CotizacionVehiculoScreen
+import edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo.CotizacionVehiculoScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoRegistroScreen
 import edu.ucne.InsurePal.presentation.usuario.LoginScreen
 
