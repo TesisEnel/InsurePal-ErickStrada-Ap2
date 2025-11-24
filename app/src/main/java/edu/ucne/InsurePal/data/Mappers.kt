@@ -1,11 +1,15 @@
 package edu.ucne.InsurePal.data
 
+import edu.ucne.InsurePal.data.local.pago.PagoEntity
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoResponse
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioResponse
+import edu.ucne.InsurePal.domain.pago.model.EstadoPago
+import edu.ucne.InsurePal.domain.pago.model.Pago
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import java.time.LocalDateTime
 
 
 fun Usuario.toRequest(): UsuarioRequest = UsuarioRequest(
@@ -49,3 +53,21 @@ fun SeguroVehiculo.toRequest(): SeguroVehiculoRequest = SeguroVehiculoRequest(
     status = status,
     expirationDate = expirationDate
 )
+
+ fun PagoEntity.toDomain(): Pago {
+    return Pago(
+        id = id,
+        polizaId = polizaId,
+        usuarioId = usuarioId,
+        monto = monto,
+        fecha = try {
+            LocalDateTime.parse(fechaIso)
+        } catch (e: Exception) {
+            LocalDateTime.now()
+        },
+        estado = if (estado.equals("APROBADO", ignoreCase = true)) EstadoPago.APROBADO else EstadoPago.RECHAZADO,
+        tarjetaUltimosDigitos = tarjetaMascara,
+
+        numeroConfirmacion = numeroConfirmacion
+    )
+}
