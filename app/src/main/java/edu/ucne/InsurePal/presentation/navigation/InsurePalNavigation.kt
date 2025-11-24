@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
+import edu.ucne.InsurePal.presentation.pago.PagoScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo.CotizacionVehiculoScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoRegistroScreen
 import edu.ucne.InsurePal.presentation.usuario.LoginScreen
@@ -86,6 +87,45 @@ fun InsurePalNavigation() {
                 }
             )
         }
+
+        composable(
+            route = Screen.CotizacionDetalle.route,
+            arguments = listOf(
+                navArgument("vehiculoId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val vehiculoId = backStackEntry.arguments?.getString("vehiculoId") ?: ""
+
+            CotizacionVehiculoScreen(
+                onNavigateToPayment = { montoTotal ->
+                    navController.navigate(Screen.Pago.passArgs(vehiculoId, montoTotal))
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Pago.route,
+            arguments = listOf(
+                navArgument("polizaId") { type = NavType.StringType },
+                navArgument("monto") { type = NavType.StringType }
+            )
+        ) {
+            PagoScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onPaymentSuccess = {
+
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
-    }
+}
+
 
