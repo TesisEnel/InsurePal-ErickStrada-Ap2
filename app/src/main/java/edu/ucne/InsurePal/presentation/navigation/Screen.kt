@@ -18,4 +18,10 @@ sealed class Screen(val route: String) {
         }
     }
 
+    data object Pago : Screen("pago_screen/{polizaId}/{monto}") {
+        fun passArgs(polizaId: String, monto: Double): String {
+            return "pago_screen/$polizaId/$monto"
+        }
+    }
+
 }
