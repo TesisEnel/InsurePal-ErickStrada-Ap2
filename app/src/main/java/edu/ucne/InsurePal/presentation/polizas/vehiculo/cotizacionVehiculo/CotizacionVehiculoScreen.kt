@@ -1,5 +1,6 @@
 package edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +30,7 @@ import java.util.Locale
 @Composable
 fun CotizacionVehiculoScreen(
     viewModel: CotizacionVehiculoViewModel = hiltViewModel(),
-    onNavigateToPayment: (Double) -> Unit,
+    onNavigateToPayment: (Double, String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -38,6 +39,8 @@ fun CotizacionVehiculoScreen(
         viewModel.onEvent(CotizacionVehiculoEvent.OnVolverClick)
         onNavigateBack()
     }
+
+    BackHandler(onBack = onBackAction)
 
     CotizacionVehiculoContent(
         state = state,
@@ -52,7 +55,7 @@ fun CotizacionVehiculoScreen(
 fun CotizacionVehiculoContent(
     state: CotizacionVehiculoUiState,
     onEvent: (CotizacionVehiculoEvent) -> Unit,
-    onNavigateToPayment: (Double) -> Unit,
+    onNavigateToPayment: (Double, String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -94,7 +97,8 @@ fun CotizacionVehiculoContent(
                     Button(
                         onClick = {
                             onEvent(CotizacionVehiculoEvent.OnContinuarPagoClick)
-                            onNavigateToPayment(state.totalPagar)
+
+                            onNavigateToPayment(state.totalPagar, state.vehiculoDescripcion)
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -198,7 +202,6 @@ fun CotizacionVehiculoContent(
     }
 }
 
-
 @Composable
 fun InfoSectionCard(
     title: String,
@@ -262,7 +265,6 @@ fun formatearMoneda(cantidad: Double): String {
     return format.format(cantidad)
 }
 
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun CotizacionVehiculoScreenPreview() {
@@ -278,20 +280,7 @@ fun CotizacionVehiculoScreenPreview() {
                 totalPagar = 44250.0
             ),
             onEvent = {},
-            onNavigateToPayment = {},
-            onNavigateBack = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CotizacionVehiculoLoadingPreview() {
-    InsurePalTheme {
-        CotizacionVehiculoContent(
-            state = CotizacionVehiculoUiState(isLoading = true),
-            onEvent = {},
-            onNavigateToPayment = {},
+            onNavigateToPayment = { _, _ -> },
             onNavigateBack = {}
         )
     }
