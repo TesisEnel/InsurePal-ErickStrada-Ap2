@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.domain.pago.repository.PagoRepository
+import edu.ucne.InsurePal.domain.pago.useCase.GetHistorialPagosUseCase
+import edu.ucne.InsurePal.domain.pago.useCase.SincronizarPagosUseCase
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HistorialViewModel @Inject constructor(
-    private val repository: PagoRepository,
+    private val sincronizar: SincronizarPagosUseCase,
+    private val getHistorial: GetHistorialPagosUseCase,
     private val userPreferences: UserPreferences,
 ) : ViewModel() {
 
@@ -41,7 +44,7 @@ class HistorialViewModel @Inject constructor(
     private fun obtenerHistorial(userId: Int) {
         viewModelScope.launch {
 
-            repository.getHistorialPagos(userId)
+            getHistorial(userId)
                 .catch { e ->
                     _state.update { it.copy(error = e.message ?: "Error desconocido") }
                 }
@@ -59,7 +62,7 @@ class HistorialViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
-                repository.sincronizarPagos(userId)
+                sincronizar(userId)
 
                 _state.update { it.copy(isLoading = false, error = null) }
             } catch (e: Exception) {
