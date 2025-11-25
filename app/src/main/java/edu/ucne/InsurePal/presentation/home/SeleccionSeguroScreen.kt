@@ -62,7 +62,7 @@ fun SeleccionSeguroScreen(
             title = "Seguro de Vida",
             description = "Asegura el futuro financiero de tus seres queridos.",
             icon = Icons.Default.Favorite,
-            isEnabled = false
+            isEnabled = true
         )
     )
 
