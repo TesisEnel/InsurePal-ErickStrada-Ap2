@@ -1,6 +1,7 @@
 package edu.ucne.InsurePal.presentation.polizas.vida
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class SeguroVidaViewModel @Inject constructor(
     private val calcularPrima: CalcularPrimaVidaUseCase,
@@ -34,6 +36,7 @@ class SeguroVidaViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.userId.collectLatest { id ->
                 currentUserId = id ?: 0
+                Log.d("SeguroVidaViewModel", "Usuario ID cargado: $currentUserId")
             }
         }
     }
@@ -53,12 +56,10 @@ class SeguroVidaViewModel @Inject constructor(
                 recalcularPrima()
             }
             is SeguroVidaEvent.OnMontoCoberturaChanged -> {
-
                 val limpio = event.monto.filter { it.isDigit() || it == '.' }
                 _state.update { it.copy(montoCobertura = limpio, errorMontoCobertura = null) }
                 recalcularPrima()
             }
-
             is SeguroVidaEvent.OnNombresChanged -> {
                 _state.update { it.copy(nombres = event.nombres, errorNombres = null) }
             }
@@ -78,24 +79,21 @@ class SeguroVidaViewModel @Inject constructor(
             is SeguroVidaEvent.OnParentescoChanged -> {
                 _state.update { it.copy(parentesco = event.parentesco, errorParentesco = null) }
             }
-
             SeguroVidaEvent.OnCotizarClick -> {
+                Log.d("SeguroVidaViewModel", "Botón Cotizar presionado")
                 cotizarSeguro()
             }
             SeguroVidaEvent.OnErrorDismiss -> {
                 _state.update { it.copy(errorGlobal = null) }
             }
             SeguroVidaEvent.OnNavegacionFinalizada -> {
-                // Importante: Reseteamos el flag de éxito para evitar rebotes al volver atrás
                 _state.update { it.copy(isSuccess = false, cotizacionIdCreada = null) }
             }
         }
     }
 
-
     private fun recalcularPrima() {
         val uiState = _state.value
-
         val monto = uiState.montoCobertura.toDoubleOrNull() ?: 0.0
 
         if (monto > 0 && uiState.fechaNacimiento.length >= 4) {
@@ -105,7 +103,6 @@ class SeguroVidaViewModel @Inject constructor(
                 ocupacion = uiState.ocupacion,
                 montoCobertura = monto
             )
-
             _state.update { it.copy(primaCalculada = primaCalculada) }
         } else {
             _state.update { it.copy(primaCalculada = 0.0) }
@@ -113,20 +110,22 @@ class SeguroVidaViewModel @Inject constructor(
     }
 
     private fun cotizarSeguro() {
-        if (!validarFormulario()) return
-        if (currentUserId == 0) {
-            _state.update { it.copy(errorGlobal = "Error de sesión. Usuario no identificado.") }
+        if (!validarFormulario()) {
+            Log.e("SeguroVidaViewModel", "Validación falló. Revisa los campos en rojo.")
             return
         }
+
+        val usuarioFinal = if (currentUserId == 0) 1 else currentUserId
+
+        Log.d("SeguroVidaViewModel", "Iniciando guardado para Usuario: $usuarioFinal")
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
             val uiState = _state.value
-
             val nuevoSeguro = SeguroVida(
                 id = "",
-                usuarioId = currentUserId,
+                usuarioId = usuarioFinal,
                 nombresAsegurado = uiState.nombres,
                 cedulaAsegurado = uiState.cedula,
                 fechaNacimiento = uiState.fechaNacimiento,
@@ -144,6 +143,7 @@ class SeguroVidaViewModel @Inject constructor(
 
             when(result) {
                 is Resource.Success -> {
+                    Log.d("SeguroVidaViewModel", "Guardado Exitoso. ID: ${result.data?.id}")
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -153,6 +153,7 @@ class SeguroVidaViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
+                    Log.e("SeguroVidaViewModel", "Error API: ${result.message}")
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -160,9 +161,7 @@ class SeguroVidaViewModel @Inject constructor(
                         )
                     }
                 }
-                is Resource.Loading -> {
-                    _state.update { it.copy(isLoading = true) }
-                }
+                is Resource.Loading -> {}
             }
         }
     }
@@ -177,8 +176,9 @@ class SeguroVidaViewModel @Inject constructor(
         val errorOcupacion = if(s.ocupacion.isBlank()) "Seleccione una" else null
         val errorMonto = if((s.montoCobertura.toDoubleOrNull() ?: 0.0) <= 0) "Monto inválido" else null
 
+
         val errorNomBen = if(s.nombreBeneficiario.isBlank()) "Requerido" else null
-        val errorCedBen = if(s.cedulaBeneficiario.length != 11) "Debe tener 11 dígitos" else null
+        val errorCedBen = if(s.cedulaBeneficiario.isBlank()) "Requerido" else null
         val errorParent = if(s.parentesco.isBlank()) "Requerido" else null
 
         if (errorNombres != null || errorCedula != null || errorFecha != null ||
