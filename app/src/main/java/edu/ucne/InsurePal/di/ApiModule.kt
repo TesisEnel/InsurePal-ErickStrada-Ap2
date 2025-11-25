@@ -3,24 +3,15 @@ package edu.ucne.InsurePal.di
 import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.InsurePal.data.local.UserPreferences
-import edu.ucne.InsurePal.data.local.pago.PagoRepositoryImpl
 import edu.ucne.InsurePal.data.remote.pago.PagoApiService
-import edu.ucne.InsurePal.data.remote.polizas.vehiculo.SeguroVehiculoRepositoryImpl
-import edu.ucne.InsurePal.data.remote.polizas.vehiculo.VehiculoRepositoryImpl
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.api.SeguroVehiculoApiService
 import edu.ucne.InsurePal.data.remote.usuario.api.UsuarioApiService
-import edu.ucne.InsurePal.data.remote.usuario.UsuarioRepositoryImpl
-import edu.ucne.InsurePal.domain.pago.repository.PagoRepository
-import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
-import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.VehiculoRepository
-import edu.ucne.InsurePal.domain.usuario.repository.UsuarioRepository
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -98,30 +89,4 @@ object Module {
             .build()
             .create(SeguroVehiculoApiService::class.java)
     }
-
-    @Module
-    @InstallIn(SingletonComponent::class)
-
-    abstract class RepositoryModule {
-        @Binds
-        @Singleton
-        abstract fun bindUsuarioRepository(
-            impl: UsuarioRepositoryImpl
-        ): UsuarioRepository
-        @Binds
-        @Singleton
-        abstract fun bindSeguroVehiculoRepository(
-            impl: SeguroVehiculoRepositoryImpl
-        ): SeguroVehiculoRepository
-
-        @Binds
-        abstract fun bindVehiculoRepository(
-            impl: VehiculoRepositoryImpl
-        ): VehiculoRepository
-
-        @Binds
-        @Singleton
-        abstract fun bindPagoRepository(
-            pagoRepositoryImpl: PagoRepositoryImpl
-        ): PagoRepository
-    }}
+}
