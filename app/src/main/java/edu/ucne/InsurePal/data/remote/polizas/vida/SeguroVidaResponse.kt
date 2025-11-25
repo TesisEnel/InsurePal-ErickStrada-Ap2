@@ -1,7 +1,7 @@
 package edu.ucne.InsurePal.data.remote.polizas.vida
 
 data class SeguroVidaResponse(
-    val id: Int,
+    val id: String,
     val usuarioId: Int,
 
     val nombresAsegurado: String,
