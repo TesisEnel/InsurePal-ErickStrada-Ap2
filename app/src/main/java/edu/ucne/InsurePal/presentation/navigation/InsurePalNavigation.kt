@@ -53,6 +53,9 @@ fun InsurePalNavigation() {
                     if (typeId == "VEHICULO") {
                         navController.navigate(Screen.VehiculoRegistro)
                     }
+                    if (typeId == "VIDA") {
+                        navController.navigate(Screen.SeguroVida)
+                    }
                 }
             )
         }
