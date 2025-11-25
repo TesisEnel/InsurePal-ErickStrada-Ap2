@@ -3,11 +3,14 @@ package edu.ucne.InsurePal.data
 import edu.ucne.InsurePal.data.local.pago.PagoEntity
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoResponse
+import edu.ucne.InsurePal.data.remote.polizas.vida.SeguroVidaRequest
+import edu.ucne.InsurePal.data.remote.polizas.vida.SeguroVidaResponse
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioResponse
 import edu.ucne.InsurePal.domain.pago.model.EstadoPago
 import edu.ucne.InsurePal.domain.pago.model.Pago
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
+import edu.ucne.InsurePal.domain.polizas.vida.SeguroVida
 import edu.ucne.InsurePal.domain.usuario.model.Usuario
 import java.time.LocalDateTime
 
@@ -71,3 +74,35 @@ fun SeguroVehiculo.toRequest(): SeguroVehiculoRequest = SeguroVehiculoRequest(
         numeroConfirmacion = numeroConfirmacion
     )
 }
+
+ fun SeguroVidaResponse.toDomain() = SeguroVida(
+     id = id,
+     usuarioId = usuarioId,
+     nombresAsegurado = nombresAsegurado,
+     cedulaAsegurado = cedulaAsegurado,
+     fechaNacimiento = fechaNacimiento,
+     ocupacion = ocupacion,
+     esFumador = esFumador,
+     nombreBeneficiario = nombreBeneficiario,
+     cedulaBeneficiario = cedulaBeneficiario,
+     parentesco = parentesco,
+     montoCobertura = montoCobertura,
+     prima = prima,
+     esPagado = esPagado,
+     fechaPago = fechaPago
+ )
+
+ fun SeguroVida.toRequest() = SeguroVidaRequest(
+    usuarioId = usuarioId,
+    nombresAsegurado = nombresAsegurado,
+    cedulaAsegurado = cedulaAsegurado,
+    fechaNacimiento = fechaNacimiento,
+    ocupacion = ocupacion,
+    esFumador = esFumador,
+    nombreBeneficiario = nombreBeneficiario,
+    cedulaBeneficiario = cedulaBeneficiario,
+    parentesco = parentesco,
+    montoCobertura = montoCobertura,
+    prima = prima
+
+)
