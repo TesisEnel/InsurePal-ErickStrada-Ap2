@@ -12,39 +12,28 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.ucne.InsurePal.presentation.home.uiModels.LifePolicyUi
+import edu.ucne.InsurePal.presentation.home.uiModels.PolicyUiModel
+import edu.ucne.InsurePal.presentation.home.uiModels.QuickAction
+import edu.ucne.InsurePal.presentation.home.uiModels.VehiclePolicyUi
+import edu.ucne.InsurePal.presentation.pago.formateo.formatearMoneda
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
-
-data class Policy(
-    val name: String,
-    val id: String,
-    val status: String,
-    val icon: ImageVector,
-    val color: Color // Mantenemos esto si quieres colores específicos de marca por tipo de seguro, o lo cambiamos a null para usar Theme
-)
-
-data class QuickAction(
-    val title: String,
-    val icon: ImageVector
-)
 
 @Composable
 fun InsuranceHomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
     onActionClick: (String) -> Unit
 ) {
-    // Nota: Usamos los colores del tema para los iconos de las pólizas para mantener consistencia
-    val policies = listOf(
-        Policy("Seguro de Auto", "POL-8821", "Activo", Icons.Default.DirectionsCar, MaterialTheme.colorScheme.primary),
-        Policy("Seguro de Hogar", "POL-1102", "Pago Pendiente", Icons.Default.Home, MaterialTheme.colorScheme.secondary),
-        Policy("Gastos Médicos", "POL-3341", "Activo", Icons.Default.MedicalServices, MaterialTheme.colorScheme.tertiary)
-    )
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val actions = listOf(
         QuickAction("Reportar Siniestro", Icons.Default.Warning),
@@ -77,15 +66,36 @@ fun InsuranceHomeScreen(
 
             item {
                 SectionTitle("Mis Pólizas")
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(policies) { policy ->
-                        PolicyCard(policy)
+
+                // Lógica de carga y lista vacía
+                if (state.isLoading) {
+                    Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (state.policies.isEmpty()) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "No tienes pólizas activas aún.",
+                            modifier = Modifier.padding(24.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(state.policies) { policy ->
+                            PolicyCard(policy)
+                        }
                     }
                 }
             }
+
             item {
                 SectionTitle("Acciones Rápidas")
                 QuickActionsGrid(
@@ -115,14 +125,14 @@ fun HomeHeader() {
             Text(
                 text = "Bienvenido de nuevo",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
         }
         IconButton(
             onClick = { /* TODO: Abrir notificaciones */ },
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape) // COLOR DINÁMICO
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
                 .size(48.dp)
         ) {
             Icon(
@@ -135,7 +145,9 @@ fun HomeHeader() {
 }
 
 @Composable
-fun PolicyCard(policy: Policy) {
+fun PolicyCard(policy: PolicyUiModel) {
+    val brandColor = policy.color ?: MaterialTheme.colorScheme.primary
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -144,7 +156,7 @@ fun PolicyCard(policy: Policy) {
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .width(280.dp)
-            .height(160.dp)
+            .height(170.dp)
     ) {
         Column(
             modifier = Modifier
@@ -156,55 +168,85 @@ fun PolicyCard(policy: Policy) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-
                 Box(
                     modifier = Modifier
-                        .background(policy.color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .background(brandColor.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                         .padding(10.dp)
                 ) {
                     Icon(
                         imageVector = policy.icon,
                         contentDescription = null,
-                        tint = policy.color
+                        tint = brandColor
                     )
                 }
 
-                val chipContainerColor = if (policy.status == "Activo")
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.errorContainer
-
-                val chipContentColor = if (policy.status == "Activo")
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else
-                    MaterialTheme.colorScheme.onErrorContainer
-
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text(policy.status, fontSize = 10.sp) },
-                    colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = chipContainerColor,
-                        labelColor = chipContentColor
-                    ),
-                    border = null,
-                    shape = CircleShape
-                )
+                StatusChip(status = policy.status)
             }
+
             Column {
                 Text(
-                    text = policy.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = policy.id,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = policy.title,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                when (policy) {
+                    is VehiclePolicyUi -> {
+                        Text(
+                            text = policy.vehicleModel,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Placa: ${policy.plate}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    is LifePolicyUi -> {
+                        Text(
+                            text = "Asegurado: ${policy.insuredName}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Cobertura: RD$ ${formatearMoneda(policy.coverageAmount)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "#${policy.id}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline
                 )
             }
         }
     }
+}
+
+@Composable
+fun StatusChip(status: String) {
+    val isActive = status == "Activo"
+    val containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+    val contentColor = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+
+    SuggestionChip(
+        onClick = {},
+        label = { Text(status, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+        colors = SuggestionChipDefaults.suggestionChipColors(
+            containerColor = containerColor,
+            labelColor = contentColor
+        ),
+        border = null,
+        shape = CircleShape,
+        modifier = Modifier.height(24.dp)
+    )
 }
 
 @Composable
@@ -234,9 +276,9 @@ fun ActionItem(
     Button(
         onClick = { onClick(action.title) },
         modifier = modifier.height(80.dp),
-        shape = MaterialTheme.shapes.medium, // Usa la forma definida en el tema (Theme.kt)
+        shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, // COLOR DINÁMICO
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
@@ -245,12 +287,12 @@ fun ActionItem(
             Icon(
                 imageVector = action.icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary // COLOR DINÁMICO
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = action.title,
-                color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1
             )
@@ -263,7 +305,7 @@ fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurface, // COLOR DINÁMICO
+        color = MaterialTheme.colorScheme.onSurface,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(bottom = 12.dp, top = 8.dp)
     )
@@ -273,7 +315,7 @@ fun SectionTitle(title: String) {
 fun PromoBanner() {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.inverseSurface // Fondo oscuro del tema
+            containerColor = MaterialTheme.colorScheme.inverseSurface
         ),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -289,47 +331,34 @@ fun PromoBanner() {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Asegura tu mascota",
-                    color = MaterialTheme.colorScheme.inverseOnSurface, // Texto claro sobre fondo oscuro
+                    color = MaterialTheme.colorScheme.inverseOnSurface,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "15% OFF este mes",
-                    color = MaterialTheme.colorScheme.tertiaryContainer, // Color de acento
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
             Icon(
                 imageVector = Icons.Default.Pets,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.inverseOnSurface, // Icono claro
+                tint = MaterialTheme.colorScheme.inverseOnSurface,
                 modifier = Modifier.size(48.dp)
             )
         }
     }
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-    name = "Modo Claro"
-)
+
+
+@Preview(showBackground = true, showSystemUi = true, name = "Modo Claro")
 @Composable
 fun InsuranceHomeScreenPreview() {
     InsurePalTheme {
-        InsuranceHomeScreen(onActionClick = {})
-    }
-}
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES,
-    name = "Modo Oscuro"
-)
-@Composable
-fun InsuranceHomeScreenDarkPreview() {
-    MaterialTheme {
-        InsuranceHomeScreen(onActionClick = {})
+        // Tendrías que crear un HomeContent separado si quieres preview,
+        // similar a lo que hicimos con SeguroVida.
+        // Por ahora, el preview fallará si se usa hiltViewModel() directamente.
     }
 }
