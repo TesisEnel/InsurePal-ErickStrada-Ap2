@@ -1,15 +1,18 @@
 package edu.ucne.InsurePal.di
 
+import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import edu.ucne.InsurePal.data.remote.usuario.UsuarioApiService
-import edu.ucne.InsurePal.data.remote.usuario.UsuarioRepositoryImpl
-import edu.ucne.InsurePal.domain.UsuarioRepository
+import edu.ucne.InsurePal.data.local.UserPreferences
+import edu.ucne.InsurePal.data.remote.pago.PagoApiService
+import edu.ucne.InsurePal.data.remote.polizas.vehiculo.api.SeguroVehiculoApiService
+import edu.ucne.InsurePal.data.remote.polizas.vida.SeguroVidaApiService
+import edu.ucne.InsurePal.data.remote.usuario.api.UsuarioApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -20,7 +23,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 object Module {
-    const val BASE_URL = "https://gestionhuacalesapi.azurewebsites.net/"
+    const val BASE_URL = "https://insurepal.azurewebsites.net/"
 
     @Provides
     @Singleton
@@ -53,6 +56,13 @@ object Module {
 
     @Provides
     @Singleton
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
+        return UserPreferences(context)
+    }
+
+
+    @Provides
+    @Singleton
     fun provideUsuarioApiService(moshi: Moshi): UsuarioApiService {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -61,13 +71,33 @@ object Module {
             .create(UsuarioApiService::class.java)
     }
 
-    @Module
-    @InstallIn(SingletonComponent::class)
+    @Provides
+    @Singleton
+    fun providePagoApiService(moshi: Moshi): PagoApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(PagoApiService::class.java)
+    }
 
-    abstract class RepositoryModule {
-        @Binds
-        @Singleton
-        abstract fun bindUsuarioRepository(
-            impl: UsuarioRepositoryImpl
-        ): UsuarioRepository
-    }}
+    @Provides
+    @Singleton
+    fun provideVehiculoApiService(moshi: Moshi): SeguroVehiculoApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(SeguroVehiculoApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVidaApiService(moshi: Moshi): SeguroVidaApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(SeguroVidaApiService::class.java)
+    }
+}

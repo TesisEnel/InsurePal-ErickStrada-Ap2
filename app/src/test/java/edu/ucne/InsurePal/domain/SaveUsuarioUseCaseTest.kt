@@ -2,7 +2,9 @@ package edu.ucne.InsurePal.domain
 
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.toRequest
-import edu.ucne.InsurePal.domain.useCases.SaveUsuarioUseCase
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import edu.ucne.InsurePal.domain.usuario.repository.UsuarioRepository
+import edu.ucne.InsurePal.domain.usuario.useCases.SaveUsuarioUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -20,7 +22,7 @@ class SaveUsuarioUseCaseTest {
     private lateinit var useCase: SaveUsuarioUseCase
 
 
-    private val testUsuario = Usuario(1, "testUser","123")
+    private val testUsuario = Usuario(1, "testUser", "123")
     private val testUsuarioRequest = testUsuario.toRequest()
 
     @Before
@@ -36,9 +38,9 @@ class SaveUsuarioUseCaseTest {
 
     @Test
     fun `invoke con id 0 (crear) devuelve Success si el repositorio tiene éxito`() = runTest {
-        val newUsuario = Usuario(0, "newUser","123")
+        val newUsuario = Usuario(0, "newUser", "123")
         val newUsuarioRequest = newUsuario.toRequest()
-        val createdUsuario = Usuario(10, "newUser","123")
+        val createdUsuario = Usuario(10, "newUser", "123")
         val repoSuccess = Resource.Success(createdUsuario)
 
         coEvery { repository.postUsuario(newUsuarioRequest) } returns repoSuccess
@@ -53,7 +55,7 @@ class SaveUsuarioUseCaseTest {
 
     @Test
     fun `invoke con id 0 (crear) devuelve Error si el repositorio falla`() = runTest {
-        val newUsuario = Usuario(0, "newUser","123")
+        val newUsuario = Usuario(0, "newUser", "123")
         val newUsuarioRequest = newUsuario.toRequest()
         val errorMessage = "Error al crear"
         val repoError = Resource.Error<Usuario>(errorMessage)
@@ -70,7 +72,7 @@ class SaveUsuarioUseCaseTest {
     @Test
     fun `invoke con id distinto de 0 (actualizar) devuelve Success si el repositorio tiene éxito`() = runTest {
         val updateId = 5
-        val updatedUsuario = Usuario(5, "updatedUser","123")
+        val updatedUsuario = Usuario(5, "updatedUser", "123")
         val updatedUsuarioRequest = updatedUsuario.toRequest()
         val repoSuccess = Resource.Success(Unit)
 
@@ -87,7 +89,7 @@ class SaveUsuarioUseCaseTest {
     @Test
     fun `invoke con id distinto de 0 (actualizar) devuelve Error si el repositorio falla`() = runTest {
         val updateId = 5
-        val updatedUsuario = Usuario(5, "updatedUser","123")
+        val updatedUsuario = Usuario(5, "updatedUser", "123")
         val updatedUsuarioRequest = updatedUsuario.toRequest()
         val errorMessage = "Error al actualizar"
         val repoError = Resource.Error<Unit>(errorMessage)

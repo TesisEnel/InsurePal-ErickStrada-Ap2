@@ -1,7 +1,7 @@
 package edu.ucne.InsurePal.data
 
-import edu.ucne.InsurePal.data.remote.usuario.RemoteDataSource
-import edu.ucne.InsurePal.data.remote.usuario.UsuarioApiService
+import edu.ucne.InsurePal.data.remote.usuario.api.RemoteDataSource
+import edu.ucne.InsurePal.data.remote.usuario.api.UsuarioApiService
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioResponse
 import io.mockk.*

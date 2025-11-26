@@ -1,6 +1,6 @@
 package edu.ucne.InsurePal.presentation.usuario
 
-import edu.ucne.InsurePal.domain.Usuario
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
 
 data class UsuarioUiState (
     val isLoading: Boolean = false,
@@ -13,5 +13,7 @@ data class UsuarioUiState (
     val isDialogVisible: Boolean = false,
     val regUserName: String = "",
     val regPassword: String = "",
-    val regConfirmPassword: String = ""
+    val regConfirmPassword: String = "",
+
+    val isLoginSuccessful: Boolean = false
 )

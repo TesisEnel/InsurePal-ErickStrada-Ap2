@@ -1,10 +1,11 @@
 package edu.ucne.InsurePal.data.remote.usuario
 
 import edu.ucne.InsurePal.data.Resource
+import edu.ucne.InsurePal.data.remote.usuario.api.RemoteDataSource
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.toDomain
-import edu.ucne.InsurePal.domain.Usuario
-import edu.ucne.InsurePal.domain.UsuarioRepository
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import edu.ucne.InsurePal.domain.usuario.repository.UsuarioRepository
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

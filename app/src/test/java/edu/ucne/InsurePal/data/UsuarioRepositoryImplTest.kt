@@ -1,6 +1,7 @@
 package edu.ucne.InsurePal.data.remote.usuario
 
 import edu.ucne.InsurePal.data.Resource
+import edu.ucne.InsurePal.data.remote.usuario.api.RemoteDataSource
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioResponse
 import edu.ucne.InsurePal.data.toDomain

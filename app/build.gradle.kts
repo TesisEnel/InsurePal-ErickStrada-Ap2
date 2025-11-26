@@ -66,7 +66,11 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.6.8")
     implementation(libs.androidx.foundation)
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
 
     implementation(libs.androidx.room.ktx)
     implementation(libs.material3)

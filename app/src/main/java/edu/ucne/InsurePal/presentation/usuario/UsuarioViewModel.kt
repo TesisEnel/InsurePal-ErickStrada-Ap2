@@ -5,10 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
-import edu.ucne.InsurePal.domain.Usuario
-import edu.ucne.InsurePal.domain.useCases.ObtenerUsuarioUseCase
-import edu.ucne.InsurePal.domain.useCases.ObtenerUsuariosUseCase
-import edu.ucne.InsurePal.domain.useCases.SaveUsuarioUseCase
+import edu.ucne.InsurePal.data.local.UserPreferences
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuarioUseCase
+import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuariosUseCase
+import edu.ucne.InsurePal.domain.usuario.useCases.SaveUsuarioUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class UsuarioViewModel @Inject constructor(
     private val guardar : SaveUsuarioUseCase,
     private val obtener : ObtenerUsuarioUseCase,
-    private val obtenerLista : ObtenerUsuariosUseCase
+    private val obtenerLista : ObtenerUsuariosUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
     private val _state = MutableStateFlow(UsuarioUiState(isLoading = true))
     val state: StateFlow<UsuarioUiState> = _state.asStateFlow()
@@ -156,8 +158,17 @@ class UsuarioViewModel @Inject constructor(
                                 }
                             }
                             user.password == password -> {
+                                user.usuarioId?.let { id ->
+                                    userPreferences.saveUser(id, user.userName)
+                                    Log.d("InsurePal_Test", "Guardando ID: $id y Nombre: ${user.userName}")
+                                }
+
                                 _state.update {
-                                    it.copy(isLoading = false, userMessage = "Inicio de sesión exitoso")
+                                    it.copy(
+                                        isLoading = false,
+                                        isLoginSuccessful = true,
+                                        userMessage = "Inicio de sesión exitoso"
+                                    )
                                 }
                             }
                             else -> {

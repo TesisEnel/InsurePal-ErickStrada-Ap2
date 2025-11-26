@@ -1,10 +1,10 @@
 package edu.ucne.InsurePal.presentation.usuario
 
 import edu.ucne.InsurePal.data.Resource
-import edu.ucne.InsurePal.domain.Usuario
-import edu.ucne.InsurePal.domain.useCases.ObtenerUsuarioUseCase
-import edu.ucne.InsurePal.domain.useCases.ObtenerUsuariosUseCase
-import edu.ucne.InsurePal.domain.useCases.SaveUsuarioUseCase
+import edu.ucne.InsurePal.domain.usuario.model.Usuario
+import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuarioUseCase
+import edu.ucne.InsurePal.domain.usuario.useCases.ObtenerUsuariosUseCase
+import edu.ucne.InsurePal.domain.usuario.useCases.SaveUsuarioUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
