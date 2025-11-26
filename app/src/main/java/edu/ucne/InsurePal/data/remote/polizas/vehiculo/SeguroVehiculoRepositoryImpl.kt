@@ -2,8 +2,8 @@ package edu.ucne.InsurePal.data.remote.polizas.vehiculo
 
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.api.RemoteDataSource
-import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
 import edu.ucne.InsurePal.data.toDomain
+import edu.ucne.InsurePal.data.toRequest
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
 import jakarta.inject.Inject
@@ -11,11 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class SeguroVehiculoRepositoryImpl @Inject constructor(
-    val remoteDataSource: RemoteDataSource
+    private val remoteDataSource: RemoteDataSource
 ): SeguroVehiculoRepository {
 
-    override suspend fun getVehiculos(usuarioId: Int): Flow<Resource<List<SeguroVehiculo>>> = flow {
+    override fun getVehiculos(usuarioId: Int): Flow<Resource<List<SeguroVehiculo>>> = flow {
         emit(Resource.Loading())
+
         when (val result = remoteDataSource.getVehiculos(usuarioId)) {
             is Resource.Success -> {
                 val list = result.data?.map { it.toDomain() } ?: emptyList()
@@ -30,12 +31,17 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun postVehiculo(req: SeguroVehiculoRequest): Resource<SeguroVehiculo> {
+    override suspend fun postVehiculo(seguro: SeguroVehiculo): Resource<SeguroVehiculo> {
 
-        return when (val result = remoteDataSource.save(req)) {
+        val requestDto = seguro.toRequest()
+        return when (val result = remoteDataSource.save(requestDto)) {
             is Resource.Success -> {
                 val response = result.data
-                Resource.Success(response?.toDomain())
+                if (response != null) {
+                    Resource.Success(response.toDomain())
+                } else {
+                    Resource.Error("Respuesta vacía")
+                }
             }
             is Resource.Error -> {
                 Resource.Error(result.message ?: "Error al guardar")
@@ -46,8 +52,11 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun putVehiculo(id: String, req: SeguroVehiculoRequest): Resource<Unit> {
-        return when(val result = remoteDataSource.update(id, req)){
+    override suspend fun putVehiculo(id: String, seguro: SeguroVehiculo): Resource<Unit> {
+
+        val requestDto = seguro.toRequest()
+
+        return when(val result = remoteDataSource.update(id, requestDto)){
             is Resource.Success -> {
                 Resource.Success(Unit)
             }
@@ -60,30 +69,28 @@ class SeguroVehiculoRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVehiculo(id: String?): Flow<Resource<SeguroVehiculo>> = flow {
-        if (id == null) {
-            emit(Resource.Error("ID de vehiculo no puede ser nulo"))
-            return@flow
+    override suspend fun getVehiculo(id: String): Resource<SeguroVehiculo> {
+        if (id.isBlank()) {
+            return Resource.Error("ID inválido")
         }
-
-        emit(Resource.Loading())
-        when(val result = remoteDataSource.getVehiculo(id)){
+        return when(val result = remoteDataSource.getVehiculo(id)){
             is Resource.Success -> {
                 val vehiculo = result.data?.toDomain()
                 if (vehiculo != null) {
-                    emit(Resource.Success(vehiculo))
+                    Resource.Success(vehiculo)
                 } else {
-                    emit(Resource.Error("Vehiculo no encontrado o datos corruptos"))
+                    Resource.Error("Vehículo no encontrado")
                 }
             }
             is Resource.Error -> {
-                emit(Resource.Error(result.message ?: "Error al obtener vehiculo"))
+                Resource.Error(result.message ?: "Error al obtener vehículo")
             }
             is Resource.Loading -> {
-                emit(Resource.Loading())
+                Resource.Loading()
             }
         }
     }
+
     override suspend fun delete(id: String): Resource<Unit> {
         return when (val result = remoteDataSource.deleteVehiculo(id)) {
             is Resource.Success -> {
