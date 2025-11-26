@@ -4,7 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute // <--- IMPORTANTE: Necesario para extraer argumentos
+import androidx.navigation.toRoute
+import edu.ucne.InsurePal.presentation.detallePoliza.DetallePolizaScreen
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
 import edu.ucne.InsurePal.presentation.pago.PagoScreen
@@ -42,6 +43,9 @@ fun InsurePalNavigation() {
                         "Nuevo Seguro" -> navController.navigate(Screen.SeleccionSeguro)
                         "Mis Pagos" -> navController.navigate(Screen.HistorialPagos)
                     }
+                },
+                onPolicyClick = { id, type ->
+                    navController.navigate(Screen.DetallePoliza(policyId = id, policyType = type))
                 }
             )
         }
@@ -114,6 +118,23 @@ fun InsurePalNavigation() {
                         Screen.Pago(
                             polizaId = "VIDA-$idCreado",
                             monto = primaCalculada,
+                            descripcion = descripcion
+                        )
+                    )
+                }
+            )
+        }
+
+        composable<Screen.DetallePoliza> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.DetallePoliza>()
+
+            DetallePolizaScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPago = { monto, descripcion ->
+                    navController.navigate(
+                        Screen.Pago(
+                            polizaId = args.policyId,
+                            monto = monto,
                             descripcion = descripcion
                         )
                     )
