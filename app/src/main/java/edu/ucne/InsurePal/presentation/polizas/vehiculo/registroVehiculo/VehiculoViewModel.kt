@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
+import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.CalcularValorVehiculoUseCase
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.ObtenerMarcasUseCase
@@ -94,8 +95,8 @@ class VehiculoRegistroViewModel @Inject constructor(
 
             _state.update { it.copy(isLoading = true) }
 
-
-            val request = SeguroVehiculoRequest(
+            val nuevoVehiculo = SeguroVehiculo(
+                idPoliza = "",
                 name = uiState.name.ifBlank { "${uiState.marca} ${uiState.modelo}" },
                 usuarioId = uiState.usuarioId,
                 marca = uiState.marca,
@@ -107,15 +108,16 @@ class VehiculoRegistroViewModel @Inject constructor(
                 valorMercado = uiState.valorMercado.toDoubleOrNull() ?: 0.0,
                 coverageType = uiState.coverageType,
                 status = "Cotizando",
-                expirationDate = LocalDate.now().toString()
+                expirationDate = LocalDate.now().toString(),
+                esPagado = false,
+                fechaPago = null
             )
-            //ToDo: Corregir para usar UseCase
-            val result = repository.postVehiculo(request)
 
+            val result = repository.postVehiculo(nuevoVehiculo)
 
             when(result) {
                 is Resource.Success -> {
-                     val idCreado = result.data?.idPoliza?.toString() ?: ""
+                    val idCreado = result.data?.idPoliza ?: ""
 
                     _state.update {
                         it.copy(
