@@ -149,7 +149,9 @@ class UsuarioViewModel @Inject constructor(
             obtenerLista().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        val user = resource.data?.find { it.userName == userName }
+                        val user = resource.data?.find {
+                            it.userName.equals(userName, ignoreCase = true)
+                        }
 
                         when {
                             user == null -> {
@@ -158,16 +160,18 @@ class UsuarioViewModel @Inject constructor(
                                 }
                             }
                             user.password == password -> {
+                                val isAdminUser = user.userName.equals("Admin", ignoreCase = true)
+
                                 user.usuarioId.let { id ->
                                     userPreferences.saveUser(id, user.userName)
-                                    Log.d("InsurePal_Test", "Guardando ID: $id y Nombre: ${user.userName}")
                                 }
 
                                 _state.update {
                                     it.copy(
                                         isLoading = false,
                                         isLoginSuccessful = true,
-                                        userMessage = "Inicio de sesión exitoso"
+                                        isAdmin = isAdminUser,
+                                        userMessage = if (isAdminUser) "Bienvenido Administrador" else "Inicio de sesión exitoso"
                                     )
                                 }
                             }
