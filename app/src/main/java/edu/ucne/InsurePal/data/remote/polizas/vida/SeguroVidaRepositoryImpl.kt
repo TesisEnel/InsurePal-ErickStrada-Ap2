@@ -3,6 +3,7 @@ package edu.ucne.InsurePal.data.remote.polizas.vida
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.toDomain
 import edu.ucne.InsurePal.data.toRequest
+import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
 import edu.ucne.InsurePal.domain.polizas.vida.repository.SeguroVidaRepository
 import jakarta.inject.Inject
@@ -18,18 +19,38 @@ class SeguroVidaRepositoryImpl @Inject constructor(
 
         val result = remoteDataSource.getSegurosVida(usuarioId)
 
-        when(result) {
+        when (result) {
             is Resource.Success -> {
                 val seguros = result.data?.map { it.toDomain() } ?: emptyList()
                 emit(Resource.Success(seguros))
             }
+
             is Resource.Error -> {
                 emit(Resource.Error(result.message ?: "Error desconocido"))
             }
+
             is Resource.Loading -> emit(Resource.Loading())
         }
     }
 
+    override fun getAllSegurosVida(): Flow<Resource<List<SeguroVida>>> = flow {
+        emit(Resource.Loading())
+
+        when (val result = remoteDataSource.getAllSegurosVida()) {
+            is Resource.Success -> {
+                val list = result.data?.map { it.toDomain() } ?: emptyList()
+                emit(Resource.Success(list))
+            }
+
+            is Resource.Error -> {
+                emit(Resource.Error(result.message ?: "Error al cargar la lista completa"))
+            }
+
+            is Resource.Loading -> {
+                emit(Resource.Loading())
+            }
+        }
+    }
     override suspend fun getSeguroVidaById(id: String): Resource<SeguroVida> {
         val result = remoteDataSource.getSeguroVidaById(id)
 
