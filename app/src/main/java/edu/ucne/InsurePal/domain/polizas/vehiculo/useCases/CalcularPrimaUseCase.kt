@@ -6,26 +6,26 @@ import jakarta.inject.Inject
 class CalcularPrimaUseCase @Inject constructor() {
 
     operator fun invoke(valorMercado: Double, tipoCobertura: String): DesglosePrima {
-
-
-        val tasaBase = when (tipoCobertura) {
-            "Full Cobertura" -> 0.025
-            "Daños a Terceros" -> 0.015
-            "Ley" -> 0.010
+        val tasaBaseAnual = when (tipoCobertura) {
+            "Full Cobertura" -> 0.025   // 2.5% anual
+            "Daños a Terceros" -> 0.015 // 1.5% anual
+            "Ley" -> 0.010              // 1.0% anual
             else -> 0.025
         }
 
-        val primaNeta = valorMercado * tasaBase
+        val primaNetaAnual = valorMercado * tasaBaseAnual
+
+        val primaNetaMensual = primaNetaAnual / 12
 
         val tasaImpuesto = 0.18
-        val impuestos = primaNeta * tasaImpuesto
+        val impuestosMensual = primaNetaMensual * tasaImpuesto
 
-        val total = primaNeta + impuestos
+        val totalMensual = primaNetaMensual + impuestosMensual
 
         return DesglosePrima(
-            primaNeta = primaNeta,
-            impuestos = impuestos,
-            total = total
+            primaNeta = primaNetaMensual,
+            impuestos = impuestosMensual,
+            total = totalMensual
         )
     }
 }
