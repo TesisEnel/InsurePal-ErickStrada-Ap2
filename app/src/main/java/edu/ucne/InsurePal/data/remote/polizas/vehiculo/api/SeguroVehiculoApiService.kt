@@ -16,7 +16,7 @@ interface SeguroVehiculoApiService {
     suspend fun getMarcas(): Response<List<MarcaVehiculoDto>>
 
     @GET("api/Vehiculos/Usuario/{usuarioId}")
-    suspend fun getVehiculos(): Response<List<SeguroVehiculoResponse>>
+    suspend fun getVehiculos(@Path("usuarioId") usuarioId: Int): Response<List<SeguroVehiculoResponse>>
 
     @GET("api/Vehiculos/{id}")
     suspend fun getVehiculo(@Path("id") id: String?): Response<SeguroVehiculoResponse>
