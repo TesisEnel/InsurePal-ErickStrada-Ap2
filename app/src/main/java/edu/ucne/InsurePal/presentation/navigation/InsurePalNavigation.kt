@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import edu.ucne.InsurePal.presentation.admin.AdminScreen
+import edu.ucne.InsurePal.presentation.admin.adminListaVehiculos.VehicleListScreen
 import edu.ucne.InsurePal.presentation.detallePoliza.DetallePolizaScreen
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
@@ -145,6 +146,12 @@ fun InsurePalNavigation() {
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable<Screen.ListaVehiculo> {
+            VehicleListScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
