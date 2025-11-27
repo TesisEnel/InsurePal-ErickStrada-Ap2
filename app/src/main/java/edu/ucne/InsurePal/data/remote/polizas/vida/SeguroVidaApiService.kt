@@ -1,5 +1,6 @@
 package edu.ucne.InsurePal.data.remote.polizas.vida
 
+import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -14,6 +15,9 @@ interface SeguroVidaApiService {
     suspend fun getSegurosVida(
         @Path("usuarioId") usuarioId: Int
     ): Response<List<SeguroVidaResponse>>
+
+    @GET("api/SegurosVida")
+    suspend fun getAllSegurosVida(): Response<List<SeguroVidaResponse>>
 
     @GET("api/SegurosVida/{id}")
     suspend fun getSeguroVidaById(@Path("id") id: String): Response<SeguroVidaResponse>
