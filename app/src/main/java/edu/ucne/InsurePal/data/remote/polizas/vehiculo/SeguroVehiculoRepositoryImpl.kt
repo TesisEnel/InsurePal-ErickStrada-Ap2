@@ -4,6 +4,7 @@ import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.api.RemoteDataSource
 import edu.ucne.InsurePal.data.toDomain
 import edu.ucne.InsurePal.data.toRequest
+import edu.ucne.InsurePal.domain.polizas.vehiculo.model.MarcaVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
 import jakarta.inject.Inject
@@ -13,6 +14,23 @@ import kotlinx.coroutines.flow.flow
 class SeguroVehiculoRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource
 ): SeguroVehiculoRepository {
+
+    override suspend fun getMarcas(): Resource<List<MarcaVehiculo>> {
+        val result = remoteDataSource.getMarcas()
+
+        return when (result) {
+            is Resource.Success -> {
+                val marcasDomain = result.data?.map { it.toDomain() } ?: emptyList()
+                Resource.Success(marcasDomain)
+            }
+            is Resource.Error -> {
+                Resource.Error(result.message ?: "Error al cargar el catálogo")
+            }
+            is Resource.Loading -> {
+                Resource.Loading()
+            }
+        }
+    }
 
     override fun getVehiculos(usuarioId: Int): Flow<Resource<List<SeguroVehiculo>>> = flow {
         emit(Resource.Loading())
