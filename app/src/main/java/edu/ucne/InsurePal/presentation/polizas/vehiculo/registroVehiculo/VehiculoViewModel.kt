@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
+import edu.ucne.InsurePal.domain.polizas.vehiculo.model.MarcaVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.CalcularValorVehiculoUseCase
@@ -29,6 +30,7 @@ class VehiculoRegistroViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(VehiculoUiState())
     val state = _state.asStateFlow()
+    private var catalogoMarcas: List<MarcaVehiculo> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -44,7 +46,7 @@ class VehiculoRegistroViewModel @Inject constructor(
             is VehiculoEvent.OnNameChanged -> _state.update { it.copy(name = event.name) }
             is VehiculoEvent.OnMarcaChanged -> {
                 _state.update { currentState ->
-                    val modelosFiltrados = getMarcas()
+                    val modelosFiltrados = catalogoMarcas
                         .find { it.nombre == event.marca }
                         ?.modelos?.map { it.nombre } ?: emptyList()
 
@@ -138,8 +140,36 @@ class VehiculoRegistroViewModel @Inject constructor(
     }
 
     private fun cargarMarcas() {
-        val marcas = getMarcas().map { it.nombre }
-        _state.update { it.copy(marcasDisponibles = marcas) }
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            val result = getMarcas()
+
+            when(result) {
+                is Resource.Success -> {
+                    catalogoMarcas = result.data ?: emptyList()
+
+                    val nombresMarcas = catalogoMarcas.map { it.nombre }
+
+                    _state.update {
+                        it.copy(
+                            marcasDisponibles = nombresMarcas,
+                            isLoading = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _state.update {
+                        it.copy(
+                            error = result.message ?: "Error al cargar marcas",
+                            isLoading = false
+                        )
+                    }
+                }
+                is Resource.Loading -> {
+                }
+            }
+        }
     }
 
     private fun calcularPrecio() {
@@ -152,7 +182,8 @@ class VehiculoRegistroViewModel @Inject constructor(
             val precioCalculado = calcularValor(
                 marca = currentState.marca,
                 modelo = currentState.modelo,
-                anio = currentState.anio
+                anio = currentState.anio,
+                catalogo = catalogoMarcas
             )
 
             if (precioCalculado > 0) {
