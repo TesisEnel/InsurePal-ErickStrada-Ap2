@@ -1,17 +1,54 @@
 package edu.ucne.InsurePal.presentation.detallePoliza
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +60,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 import java.text.NumberFormat
 import java.util.Locale
+
+private const val COBERTURA_FULL = "Cobertura Full"
 
 @Composable
 fun DetallePolizaScreen(
@@ -52,7 +91,6 @@ fun DetallePolizaScreen(
         policyType = viewModel.policyType
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,7 +238,7 @@ fun PolicyDetailContent(
                 Text("Selecciona nueva cobertura", style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val planes = listOf("Cobertura Full", "Ley", "Daños a Terceros")
+                val planes = listOf(COBERTURA_FULL, "Ley", "Daños a Terceros")
                 planes.forEach { plan ->
                     val selected = plan == state.coverageType
                     ListItem(
@@ -282,7 +320,6 @@ fun formatMoney(amount: Double): String {
     return NumberFormat.getNumberInstance(Locale.US).format(amount)
 }
 
-// 3. PREVIEWS DE EJEMPLO
 @Preview(name = "Detalle Vehículo Pendiente", showSystemUi = true)
 @Composable
 fun PolicyDetailVehiclePreview() {
@@ -294,11 +331,11 @@ fun PolicyDetailVehiclePreview() {
                 status = "Cotizando",
                 price = 25000.0,
                 isPaid = false,
-                coverageType = "Cobertura Full",
+                coverageType = COBERTURA_FULL,
                 details = mapOf(
                     "Placa" to "A-458291",
                     "Chasis" to "8291SKL291",
-                    "Tipo Cobertura" to "Cobertura Full",
+                    "Tipo Cobertura" to COBERTURA_FULL,
                     "Vigencia" to "Pendiente"
                 )
             ),
