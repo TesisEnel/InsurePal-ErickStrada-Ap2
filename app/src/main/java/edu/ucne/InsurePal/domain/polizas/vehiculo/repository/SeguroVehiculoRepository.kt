@@ -8,6 +8,7 @@ import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
 import kotlinx.coroutines.flow.Flow
 
 interface SeguroVehiculoRepository {
+    fun getAllVehiculos(): Flow<Resource<List<SeguroVehiculo>>>
     fun getVehiculos(usuarioId: Int): Flow<Resource<List<SeguroVehiculo>>>
 
     suspend fun getVehiculo(id: String): Resource<SeguroVehiculo>
