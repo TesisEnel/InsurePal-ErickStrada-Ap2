@@ -3,7 +3,7 @@ package edu.ucne.InsurePal.data.remote.reclamoVehiculo
 data class ReclamoResponse(
     val id: String,
 
-    val folio: String,
+    val folio: String?,
 
     val polizaId: String,
 
