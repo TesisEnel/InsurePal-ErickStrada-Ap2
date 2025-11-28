@@ -13,7 +13,7 @@ interface SeguroVidaRepository {
 
     suspend fun saveSeguroVida(seguro: SeguroVida): Resource<SeguroVida>
 
-    suspend fun updateSeguroVida(id: String, seguro: SeguroVida): Resource<SeguroVida>
+    suspend fun updateSeguroVida(id: String, seguro: SeguroVida): Resource<Unit>
 
     suspend fun delete(id: String) : Resource<Unit>
 }
