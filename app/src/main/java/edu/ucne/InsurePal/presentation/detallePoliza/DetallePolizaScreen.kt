@@ -18,7 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -87,8 +87,7 @@ fun DetallePolizaScreen(
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
         onNavigateToPago = onNavigateToPago,
-        snackbarHostState = snackbarHostState,
-        policyType = viewModel.policyType
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -99,12 +98,13 @@ fun PolicyDetailContent(
     onEvent: (DetallePolizaEvent) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToPago: (Double, String) -> Unit,
-    snackbarHostState: SnackbarHostState,
-    policyType: String
+    snackbarHostState: SnackbarHostState
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPlanSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    val isPendingApproval = state.status == "Cotizando" || state.status == "Pendiente de aprobación"
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -133,6 +133,33 @@ fun PolicyDetailContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 HeaderCard(state)
+                if (isPendingApproval) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Tu póliza está siendo evaluada por la administración. Te notificaremos cuando sea aprobada para proceder con el pago.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -159,30 +186,20 @@ fun PolicyDetailContent(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (policyType == "VEHICULO") {
-                    OutlinedButton(
-                        onClick = { showPlanSheet = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Cambiar Tipo de Cobertura")
-                    }
-                }
-
                 if (!state.isPaid) {
-                    Button(
-                        onClick = {
-                            onNavigateToPago(state.price, "Pago de ${state.title}")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Icon(Icons.Default.Payment, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pagar RD$ ${formatMoney(state.price)}")
+                    if (!isPendingApproval) {
+                        Button(
+                            onClick = {
+                                onNavigateToPago(state.price, "Pago de ${state.title}")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Icon(Icons.Default.Payment, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Pagar RD$ ${formatMoney(state.price)}")
+                        }
                     }
                 } else {
                     Button(
@@ -296,7 +313,7 @@ fun HeaderCard(state: DetallePolizaUiState) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Prima: RD$ ${formatMoney(state.price)}",
+                text = "Prima Mensual: RD$ ${formatMoney(state.price)}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -342,8 +359,7 @@ fun PolicyDetailVehiclePreview() {
             onEvent = {},
             onNavigateBack = {},
             onNavigateToPago = { _, _ -> },
-            snackbarHostState = remember { SnackbarHostState() },
-            policyType = "VEHICULO"
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -369,8 +385,7 @@ fun PolicyDetailLifePreview() {
             onEvent = {},
             onNavigateBack = {},
             onNavigateToPago = { _, _ -> },
-            snackbarHostState = remember { SnackbarHostState() },
-            policyType = "VIDA"
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
