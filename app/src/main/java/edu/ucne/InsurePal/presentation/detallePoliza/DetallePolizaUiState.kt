@@ -12,6 +12,7 @@ data class DetallePolizaUiState (
     val price: Double = 0.0,
     val isPaid: Boolean = false,
     val coverageType: String = "",
+    val usuarioId: Int = 0,
 
     val details: Map<String, String> = emptyMap()
 )
