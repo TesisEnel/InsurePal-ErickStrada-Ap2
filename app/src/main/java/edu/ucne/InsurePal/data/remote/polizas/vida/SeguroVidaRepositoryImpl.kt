@@ -3,7 +3,6 @@ package edu.ucne.InsurePal.data.remote.polizas.vida
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.toDomain
 import edu.ucne.InsurePal.data.toRequest
-import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
 import edu.ucne.InsurePal.domain.polizas.vida.repository.SeguroVidaRepository
 import jakarta.inject.Inject
@@ -80,18 +79,21 @@ class SeguroVidaRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateSeguroVida(id: String, seguro: SeguroVida): Resource<SeguroVida> {
-        val request = seguro.toRequest()
-        val result = remoteDataSource.updateSeguroVida(id, request)
 
-        return when(result) {
+    override suspend fun updateSeguroVida(id: String, seguro: SeguroVida): Resource<Unit> {
+
+        val requestDto = seguro.toRequest()
+
+        return when(val result = remoteDataSource.updateSeguroVida(id, requestDto)){
             is Resource.Success -> {
-                Resource.Success(result.data!!.toDomain())
+                Resource.Success(Unit)
             }
             is Resource.Error -> {
                 Resource.Error(result.message ?: "Error al actualizar")
             }
-            is Resource.Loading -> Resource.Loading()
+            else -> {
+                Resource.Error("Error desconocido al actualizar")
+            }
         }
     }
 
