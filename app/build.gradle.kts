@@ -45,6 +45,7 @@ android {
 dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.activity.ktx)
