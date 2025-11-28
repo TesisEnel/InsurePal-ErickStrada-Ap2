@@ -9,5 +9,6 @@ data class ListaVehiculoUiState (
     val filteredVehicles: List<SeguroVehiculo> = emptyList(),
     val searchQuery: String = "",
     val selectedVehicle: SeguroVehiculo? = null,
-    val isDetailVisible: Boolean = false
+    val isDetailVisible: Boolean = false,
+    val showPendingOnly: Boolean = false
 )
