@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import edu.ucne.InsurePal.presentation.admin.AdminScreen
 import edu.ucne.InsurePal.presentation.admin.adminListaVehiculos.VehicleListScreen
+import edu.ucne.InsurePal.presentation.admin.adminListaVidas.ListaVidaScreen
 import edu.ucne.InsurePal.presentation.detallePoliza.DetallePolizaScreen
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
@@ -138,7 +139,6 @@ fun InsurePalNavigation() {
                     navController.navigate(Screen.ListaVehiculo)
                 },
                 onNavigateToLife = {
-
                     navController.navigate(Screen.ListaVida)
                 },
                 onLogout = {
@@ -151,6 +151,12 @@ fun InsurePalNavigation() {
 
         composable<Screen.ListaVehiculo> {
             VehicleListScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<Screen.ListaVida>{
+            ListaVidaScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
