@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
+import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.domain.polizas.vehiculo.repository.SeguroVehiculoRepository
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.CalcularPrimaUseCase
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.EliminarSeguroVehiculoUseCase
@@ -25,7 +26,8 @@ class DetallePolizaViewModel @Inject constructor(
     private val vehiculoRepository: SeguroVehiculoRepository,
     private val getVidaUseCase: GetSeguroVidaByIdUseCase,
     private val eliminarVidaUseCase: DeleteSeguroVidaUseCase,
-    private val calcularPrimaUseCase: CalcularPrimaUseCase // Inyección del nuevo UseCase
+    private val calcularPrimaUseCase: CalcularPrimaUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetallePolizaUiState())
@@ -35,6 +37,11 @@ class DetallePolizaViewModel @Inject constructor(
     val policyType: String = savedStateHandle.get<String>("policyType") ?: ""
 
     init {
+        viewModelScope.launch {
+            userPreferences.userId.collect { id ->
+                _state.update { it.copy(usuarioId = id?: 0) }
+            }
+        }
         cargarDetalle()
     }
 
@@ -71,7 +78,8 @@ class DetallePolizaViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            policyId = v.idPoliza ?: "",
+                            policyId = v.idPoliza ?: policyId,
+                            usuarioId = v.usuarioId,
                             title = "${v.marca} ${v.modelo}",
                             subtitle = "${v.anio} • ${v.color}",
                             status = v.status ?: "Pendiente",
@@ -95,7 +103,6 @@ class DetallePolizaViewModel @Inject constructor(
     }
 
     private suspend fun cargarVida() {
-
         val result = getVidaUseCase(policyId)
 
         when(result) {
@@ -105,6 +112,7 @@ class DetallePolizaViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         policyId = "VIDA-${v.id}",
+                        usuarioId = v.usuarioId,
                         title = v.nombresAsegurado,
                         subtitle = "Seguro de Vida",
                         status = if(v.esPagado) "Activo" else "Pendiente",
