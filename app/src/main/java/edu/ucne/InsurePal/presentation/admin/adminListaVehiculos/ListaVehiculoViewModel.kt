@@ -129,7 +129,7 @@ class VehicleListViewModel @Inject constructor(
         
         if (showPendingOnly) {
             result = result.filter {
-                it.status == "Cotizando" || it.status.isBlank()
+                it.status == "Pendiente de aprobación" || it.status.isBlank()
             }
         }
 
