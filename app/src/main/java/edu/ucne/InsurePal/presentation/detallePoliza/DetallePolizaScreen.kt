@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material.icons.filled.Warning // Import necesario para el icono de reclamo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -87,7 +88,8 @@ fun DetallePolizaScreen(
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
         onNavigateToPago = onNavigateToPago,
-        snackbarHostState = snackbarHostState
+        snackbarHostState = snackbarHostState,
+        policyType = viewModel.policyType
     )
 }
 
@@ -98,7 +100,8 @@ fun PolicyDetailContent(
     onEvent: (DetallePolizaEvent) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToPago: (Double, String) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    policyType: String
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPlanSheet by remember { mutableStateOf(false) }
@@ -185,6 +188,25 @@ fun PolicyDetailContent(
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                if (policyType == "VEHICULO") {
+                     if (state.isPaid) {
+                        Button(
+                            onClick = { /* TODO: Navegar a pantalla de reclamo */ },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Icon(Icons.Default.Warning, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Realizar Reclamo")
+                        }
+                    }
+
+                }
 
                 if (!state.isPaid) {
                     if (!isPendingApproval) {
@@ -313,7 +335,7 @@ fun HeaderCard(state: DetallePolizaUiState) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Prima Mensual: RD$ ${formatMoney(state.price)}",
+                text = "Prima: RD$ ${formatMoney(state.price)}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -359,7 +381,8 @@ fun PolicyDetailVehiclePreview() {
             onEvent = {},
             onNavigateBack = {},
             onNavigateToPago = { _, _ -> },
-            snackbarHostState = remember { SnackbarHostState() }
+            snackbarHostState = remember { SnackbarHostState() },
+            policyType = "VEHICULO"
         )
     }
 }
@@ -385,7 +408,8 @@ fun PolicyDetailLifePreview() {
             onEvent = {},
             onNavigateBack = {},
             onNavigateToPago = { _, _ -> },
-            snackbarHostState = remember { SnackbarHostState() }
+            snackbarHostState = remember { SnackbarHostState() },
+            policyType = "VIDA"
         )
     }
 }
