@@ -52,6 +52,11 @@ fun InsurePalNavigation() {
                 },
                 onPolicyClick = { id, type ->
                     navController.navigate(Screen.DetallePoliza(policyId = id, policyType = type))
+                },
+                onLogout = {
+                    navController.navigate(Screen.Login) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
@@ -87,15 +92,10 @@ fun InsurePalNavigation() {
             val args = backStackEntry.toRoute<Screen.CotizacionDetalle>()
 
             CotizacionVehiculoScreen(
-                onNavigateToPayment = { montoRecibido, descripcionRecibida ->
-
-                    navController.navigate(
-                        Screen.Pago(
-                            polizaId = args.vehiculoId,
-                            monto = montoRecibido,
-                            descripcion = descripcionRecibida
-                        )
-                    )
+                onNavigateToPayment = { _, _ ->
+                    navController.navigate(Screen.Home) {
+                        popUpTo(Screen.Home) { inclusive = true }
+                    }
                 },
                 onNavigateBack = { navController.popBackStack() }
             )
