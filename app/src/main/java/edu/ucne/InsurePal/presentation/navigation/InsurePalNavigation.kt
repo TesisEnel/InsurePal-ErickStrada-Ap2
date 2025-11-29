@@ -19,6 +19,7 @@ import edu.ucne.InsurePal.presentation.pago.listaPago.HistorialPagosScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo.CotizacionVehiculoScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.VehiculoRegistroScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.reclamoVehiculo.ReclamoScreen
+import edu.ucne.InsurePal.presentation.polizas.vida.reclamoVida.ReclamoVidaScreen
 import edu.ucne.InsurePal.presentation.polizas.vida.registroVida.RegistroSeguroVidaScreen
 import edu.ucne.InsurePal.presentation.usuario.LoginScreen
 
@@ -54,6 +55,7 @@ fun InsurePalNavigation() {
                         "Nuevo Seguro" -> navController.navigate(Screen.SeleccionSeguro)
                         "Mis Pagos" -> navController.navigate(Screen.HistorialPagos)
                         "Mis Reclamos" -> navController.navigate(Screen.ListaReclamos)
+                        "Reportar Deceso" -> navController.navigate(Screen.ReclamoVida)
                     }
                 },
                 onPolicyClick = { id, type ->
@@ -166,6 +168,12 @@ fun InsurePalNavigation() {
                 onNavigateToLifeClaims = {
                     // TODO: Implementar lista de vida admin
                 }
+            )
+        }
+
+        composable<Screen.ReclamoVida> { backStackEntry ->
+            ReclamoVidaScreen(
+                navigateBack = { navController.popBackStack() }
             )
         }
 
