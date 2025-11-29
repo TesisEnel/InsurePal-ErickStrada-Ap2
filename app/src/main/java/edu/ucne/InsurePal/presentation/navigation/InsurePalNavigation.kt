@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import edu.ucne.InsurePal.presentation.admin.AdminScreen
 import edu.ucne.InsurePal.presentation.admin.adminListaVehiculos.VehicleListScreen
 import edu.ucne.InsurePal.presentation.admin.adminListaVidas.ListaVidaScreen
+import edu.ucne.InsurePal.presentation.admin.adminReclamosVehiculos.ListaReclamosAdminScreen
 import edu.ucne.InsurePal.presentation.detallePoliza.DetallePolizaScreen
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
@@ -81,9 +82,10 @@ fun InsurePalNavigation() {
         }
 
         composable<Screen.DetalleReclamo> { backStackEntry ->
-             val args = backStackEntry.toRoute<Screen.DetalleReclamo>()
+            val args = backStackEntry.toRoute<Screen.DetalleReclamo>()
 
             DetalleReclamoScreen(
+                isAdmin = args.isAdmin,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -147,7 +149,6 @@ fun InsurePalNavigation() {
         composable<Screen.Admin> {
             AdminScreen(
                 onNavigateToVehicles = {
-
                     navController.navigate(Screen.ListaVehiculo)
                 },
                 onNavigateToLife = {
@@ -157,6 +158,22 @@ fun InsurePalNavigation() {
                     navController.navigate(Screen.Login) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                // --- Navegación Admin a Lista de Reclamos ---
+                onNavigateToVehicleClaims = {
+                    navController.navigate(Screen.ListaReclamosVehiculoAdmin)
+                },
+                onNavigateToLifeClaims = {
+                    // TODO: Implementar lista de vida admin
+                }
+            )
+        }
+
+        composable<Screen.ListaReclamosVehiculoAdmin> {
+            ListaReclamosAdminScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onReclamoClick = { id ->
+                    navController.navigate(Screen.DetalleReclamo(id, isAdmin = true))
                 }
             )
         }
@@ -200,9 +217,9 @@ fun InsurePalNavigation() {
 
         composable<Screen.ListaReclamos> {
             ListaReclamosScreen(
-                onNavigateBack = { navController.popBackStack()
-                },
+                onNavigateBack = { navController.popBackStack() },
                 onReclamoClick = { reclamoId ->
+                    // Modo Usuario: isAdmin es false por defecto
                     navController.navigate(Screen.DetalleReclamo(reclamoId))
                 }
             )
