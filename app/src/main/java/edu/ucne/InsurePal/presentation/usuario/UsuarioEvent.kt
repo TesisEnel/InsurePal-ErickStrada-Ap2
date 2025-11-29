@@ -11,7 +11,7 @@ sealed interface UsuarioEvent
     object userMessageShown : UsuarioEvent
 
     data class Crear(val usuario: Usuario): UsuarioEvent
-    data class actualizar(val usuario: Usuario) : UsuarioEvent
+    data class Actualizar(val usuario: Usuario) : UsuarioEvent
 
     data object new: UsuarioEvent
     data object onLoginClick : UsuarioEvent

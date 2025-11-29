@@ -61,7 +61,7 @@ class UsuarioViewModel @Inject constructor(
     fun onEvent(event: UsuarioEvent) {
         when (event) {
             is UsuarioEvent.Crear -> crearUsuario(event.usuario)
-            is UsuarioEvent.actualizar -> updateUsuario(event.usuario)
+            is UsuarioEvent.Actualizar -> updateUsuario(event.usuario)
             is UsuarioEvent.Obtener -> getUsuario(event.id)
             is UsuarioEvent.cargar -> obtenerUsuarios()
             is UsuarioEvent.OnPasswordChange -> {
