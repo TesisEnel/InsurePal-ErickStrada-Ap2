@@ -14,7 +14,7 @@ class UsuarioRepositoryImpl @Inject constructor(
     val remoteDataSource: RemoteDataSource
 ): UsuarioRepository {
 
-    override suspend fun getUsuarios(): Flow<Resource<List<Usuario>>> = flow {
+    override fun getUsuarios(): Flow<Resource<List<Usuario>>> = flow {
         emit(Resource.Loading())
         when (val result = remoteDataSource.getUsuarios()) {
             is Resource.Success -> {
@@ -60,7 +60,7 @@ class UsuarioRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getUsuario(id: Int?): Flow<Resource<Usuario>> = flow {
+    override fun getUsuario(id: Int?): Flow<Resource<Usuario>> = flow {
         if (id == null) {
             emit(Resource.Error("ID de usuario no puede ser nulo"))
             return@flow

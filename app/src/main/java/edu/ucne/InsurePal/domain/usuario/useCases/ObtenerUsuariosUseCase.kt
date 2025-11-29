@@ -9,5 +9,5 @@ import javax.inject.Inject
 class ObtenerUsuariosUseCase @Inject constructor(
     private val repository: UsuarioRepository
 ) {
-    suspend operator fun invoke(): Flow<Resource<List<Usuario>>> = repository.getUsuarios()
+     operator fun invoke(): Flow<Resource<List<Usuario>>> = repository.getUsuarios()
 }
