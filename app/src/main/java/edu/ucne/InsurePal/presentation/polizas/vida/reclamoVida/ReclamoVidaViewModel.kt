@@ -5,11 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
+import edu.ucne.InsurePal.data.local.UserPreferences
+import edu.ucne.InsurePal.domain.polizas.vida.useCases.GetSeguroVidaByIdUseCase
 import edu.ucne.InsurePal.domain.reclamoVida.useCases.CrearReclamoVidaUseCase
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -17,7 +20,9 @@ import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class ReclamoVidaViewModel @Inject constructor(
-    private val crearReclamoVidaUseCase: CrearReclamoVidaUseCase
+    private val crearReclamoVidaUseCase: CrearReclamoVidaUseCase,
+    private val getSeguroVidaByIdUseCase: GetSeguroVidaByIdUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val TAG = "ReclamoVidaVM"
@@ -61,7 +66,8 @@ class ReclamoVidaViewModel @Inject constructor(
                 validarFormulario()
             }
             is ReclamoVidaEvent.GuardarReclamo -> {
-                enviarReclamo(event.polizaId, event.usuarioId)
+                // El usuarioId del evento se ignora, usamos el de preferencias
+                enviarReclamo(event.polizaId)
             }
             ReclamoVidaEvent.ErrorVisto -> {
                 _uiState.update { it.copy(error = null) }
@@ -82,7 +88,7 @@ class ReclamoVidaViewModel @Inject constructor(
         _uiState.update { it.copy(camposValidos = esValido) }
     }
 
-    private fun enviarReclamo(polizaId: String, usuarioId: Int) {
+    private fun enviarReclamo(polizaId: String) {
         val estado = _uiState.value
 
         if (estado.archivoActa == null) {
@@ -94,9 +100,21 @@ class ReclamoVidaViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
+                val userId = userPreferences.userId.first() ?: 0
+                if (userId == 0) {
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo identificar al usuario. Inicia sesión nuevamente.") }
+                    return@launch
+                }
+
+                val polizaResult = getSeguroVidaByIdUseCase(polizaId)
+
+                if (polizaResult is Resource.Error) {
+                    _uiState.update { it.copy(isLoading = false, error = "La póliza '$polizaId' no existe o no se encuentra.") }
+                    return@launch
+                }
                 val result = crearReclamoVidaUseCase(
                     polizaId = polizaId,
-                    usuarioId = usuarioId,
+                    usuarioId = userId,
                     nombreAsegurado = estado.nombreAsegurado,
                     descripcion = estado.descripcion,
                     lugarFallecimiento = estado.lugarFallecimiento,
