@@ -116,7 +116,6 @@ fun UsuarioScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 1. HEADER / LOGO
         Icon(
             imageVector = Icons.Default.Shield,
             contentDescription = "Logo",
@@ -147,7 +146,7 @@ fun UsuarioScreenContent(
             label = { Text("Usuario") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp), // Bordes redondeados modernos
+            shape = RoundedCornerShape(12.dp),
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
@@ -184,7 +183,7 @@ fun UsuarioScreenContent(
         )
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            TextButton(onClick = { /* TODO: Recuperar */ }) {
+            TextButton(onClick = { /* no implementado*/ }) {
                 Text("¿Olvidaste tu contraseña?", style = MaterialTheme.typography.bodySmall)
             }
         }
