@@ -21,7 +21,6 @@ class DetalleReclamoViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getReclamoVehiculoUseCase: GetReclamoVehiculoByIdUseCase,
     private val cambiarEstadoVehiculoUseCase: CambiarEstadoReclamoUseCase,
-
     private val getReclamoVidaUseCase: GetReclamoVidaByIdUseCase,
     private val cambiarEstadoVidaUseCase: CambiarEstadoReclamoVidaUseCase
 ) : ViewModel() {
@@ -30,6 +29,7 @@ class DetalleReclamoViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private val reclamoId: String = savedStateHandle.get<String>("reclamoId") ?: ""
+    private val tipoReclamoStr: String = savedStateHandle.get<String>("tipo") ?: "VEHICULO"
 
     init {
         detectarTipoYCargar()
@@ -38,17 +38,20 @@ class DetalleReclamoViewModel @Inject constructor(
     fun onEvent(event: DetalleReclamoEvent) {
         when(event) {
             DetalleReclamoEvent.OnErrorDismiss -> _state.update { it.copy(error = null) }
-            DetalleReclamoEvent.OnReintentar -> detectarTipoYCargar()
-
+            DetalleReclamoEvent.OnReintentar -> detectingTipoYCargar()
             DetalleReclamoEvent.OnAprobar -> cambiarEstado("APROBADO", null)
             is DetalleReclamoEvent.OnRechazar -> cambiarEstado("RECHAZADO", event.motivo)
         }
     }
 
+    private fun detectingTipoYCargar() {
+        detectarTipoYCargar()
+    }
+
     private fun detectarTipoYCargar() {
         if (reclamoId.isBlank()) return
 
-        if (reclamoId.startsWith("VIDA-")) {
+        if (tipoReclamoStr == "VIDA") {
             _state.update { it.copy(tipo = TipoReclamo.VIDA) }
             cargarReclamoVida()
         } else {
@@ -60,16 +63,9 @@ class DetalleReclamoViewModel @Inject constructor(
     private fun cargarReclamoVehiculo() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-
             when (val result = getReclamoVehiculoUseCase(reclamoId)) {
-                is Resource.Success -> {
-                    _state.update {
-                        it.copy(isLoading = false, reclamoVehiculo = result.data)
-                    }
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false, error = result.message) }
-                }
+                is Resource.Success -> _state.update { it.copy(isLoading = false, reclamoVehiculo = result.data) }
+                is Resource.Error -> _state.update { it.copy(isLoading = false, error = result.message) }
                 is Resource.Loading -> { }
             }
         }
@@ -79,14 +75,8 @@ class DetalleReclamoViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             when (val result = getReclamoVidaUseCase(reclamoId)) {
-                is Resource.Success -> {
-                    _state.update {
-                        it.copy(isLoading = false, reclamoVida = result.data)
-                    }
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false, error = result.message) }
-                }
+                is Resource.Success -> _state.update { it.copy(isLoading = false, reclamoVida = result.data) }
+                is Resource.Error -> _state.update { it.copy(isLoading = false, error = result.message) }
                 is Resource.Loading -> { }
             }
         }
@@ -95,7 +85,6 @@ class DetalleReclamoViewModel @Inject constructor(
     private fun cambiarEstado(nuevoEstado: String, motivo: String?) {
         viewModelScope.launch {
             _state.update { it.copy(isUpdating = true) }
-
             val currentState = _state.value
 
             if (currentState.tipo == TipoReclamo.VEHICULO) {
@@ -114,17 +103,9 @@ class DetalleReclamoViewModel @Inject constructor(
         when (result) {
             is Resource.Success -> {
                 if (_state.value.tipo == TipoReclamo.VEHICULO) cargarReclamoVehiculo() else cargarReclamoVida()
-
-                _state.update {
-                    it.copy(
-                        isUpdating = false,
-                        exitoOperacion = "Reclamo $nuevoEstado correctamente"
-                    )
-                }
+                _state.update { it.copy(isUpdating = false, exitoOperacion = "Reclamo $nuevoEstado correctamente") }
             }
-            is Resource.Error -> {
-                _state.update { it.copy(isUpdating = false, error = result.message) }
-            }
+            is Resource.Error -> _state.update { it.copy(isUpdating = false, error = result.message) }
             else -> {}
         }
     }
