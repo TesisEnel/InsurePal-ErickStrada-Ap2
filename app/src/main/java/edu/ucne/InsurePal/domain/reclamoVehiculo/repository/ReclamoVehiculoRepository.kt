@@ -12,6 +12,7 @@ interface ReclamoVehiculoRepository {
         direccion: String,
         tipoIncidente: String,
         fechaIncidente: String,
+        numCuenta : String,
         imagen: File
     ): Resource<ReclamoVehiculo>
 
