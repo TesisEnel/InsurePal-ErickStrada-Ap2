@@ -23,8 +23,6 @@ class ReclamoVidaRemoteDataSource @Inject constructor(
     ): Resource<ReclamoVidaResponse> {
         return try {
             val textType = "text/plain".toMediaTypeOrNull()
-            val imageType = "application/pdf".toMediaTypeOrNull()
-
             val polizaRb = request.polizaId.toRequestBody(textType)
             val usuarioRb = request.usuarioId.toString().toRequestBody(textType)
             val nombreRb = request.nombreAsegurado.toRequestBody(textType)
