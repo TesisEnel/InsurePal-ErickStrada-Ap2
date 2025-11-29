@@ -9,6 +9,7 @@ import edu.ucne.InsurePal.presentation.admin.AdminScreen
 import edu.ucne.InsurePal.presentation.admin.adminListaVehiculos.VehicleListScreen
 import edu.ucne.InsurePal.presentation.admin.adminListaVidas.ListaVidaScreen
 import edu.ucne.InsurePal.presentation.admin.adminReclamosVehiculos.ListaReclamosAdminScreen
+import edu.ucne.InsurePal.presentation.admin.adminReclamosVidas.ListaReclamosVidasAdminScreen
 import edu.ucne.InsurePal.presentation.detallePoliza.DetallePolizaScreen
 import edu.ucne.InsurePal.presentation.home.InsuranceHomeScreen
 import edu.ucne.InsurePal.presentation.home.SeleccionSeguroScreen
@@ -161,12 +162,11 @@ fun InsurePalNavigation() {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                // --- Navegación Admin a Lista de Reclamos ---
                 onNavigateToVehicleClaims = {
                     navController.navigate(Screen.ListaReclamosVehiculoAdmin)
                 },
                 onNavigateToLifeClaims = {
-                    // TODO: Implementar lista de vida admin
+                    navController.navigate(Screen.ListaReclamosVidaAdmin)
                 }
             )
         }
@@ -181,7 +181,16 @@ fun InsurePalNavigation() {
             ListaReclamosAdminScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onReclamoClick = { id ->
-                    navController.navigate(Screen.DetalleReclamo(id, isAdmin = true))
+                    navController.navigate(Screen.DetalleReclamo(id,"VEHICULO" ,isAdmin = true))
+                }
+            )
+        }
+
+        composable<Screen.ListaReclamosVidaAdmin> {
+            ListaReclamosVidasAdminScreen (
+                onNavigateBack = { navController.popBackStack() },
+                onReclamoClick = { id ->
+                    navController.navigate(Screen.DetalleReclamo(id, "VIDA",isAdmin = true))
                 }
             )
         }
@@ -226,9 +235,9 @@ fun InsurePalNavigation() {
         composable<Screen.ListaReclamos> {
             ListaReclamosScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onReclamoClick = { reclamoId ->
+                onReclamoClick = { reclamoId,tipo ->
                     // Modo Usuario: isAdmin es false por defecto
-                    navController.navigate(Screen.DetalleReclamo(reclamoId))
+                    navController.navigate(Screen.DetalleReclamo(reclamoId,tipo))
                 }
             )
         }
