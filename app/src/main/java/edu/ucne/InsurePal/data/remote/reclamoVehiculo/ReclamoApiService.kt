@@ -23,6 +23,7 @@ interface ReclamosApiService {
         @Part("Direccion") direccion: RequestBody,
         @Part("TipoIncidente") tipoIncidente: RequestBody,
         @Part("FechaIncidente") fechaIncidente: RequestBody,
+        @Part("NumCuenta") numCuenta: RequestBody,
         @Part imagen: MultipartBody.Part
     ): Response<ReclamoResponse>
 
