@@ -7,6 +7,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.domain.reclamoVehiculo.useCases.CambiarEstadoReclamoUseCase
 import edu.ucne.InsurePal.domain.reclamoVehiculo.useCases.GetReclamoVehiculoByIdUseCase
+import edu.ucne.InsurePal.domain.reclamoVida.useCases.CambiarEstadoReclamoVidaUseCase
+import edu.ucne.InsurePal.domain.reclamoVida.useCases.GetReclamoVidaByIdUseCase
 import edu.ucne.InsurePal.presentation.listaReclamos.UiModels.TipoReclamo
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,8 +20,10 @@ import kotlinx.coroutines.launch
 class DetalleReclamoViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getReclamoVehiculoUseCase: GetReclamoVehiculoByIdUseCase,
-    private val cambiarEstadoUseCase: CambiarEstadoReclamoUseCase
-    // private val getReclamoVidaUseCase: GetReclamoVidaByIdUseCase // Inyectar en el futuro
+    private val cambiarEstadoVehiculoUseCase: CambiarEstadoReclamoUseCase,
+
+    private val getReclamoVidaUseCase: GetReclamoVidaByIdUseCase,
+    private val cambiarEstadoVidaUseCase: CambiarEstadoReclamoVidaUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetalleReclamoUiState())
@@ -34,16 +38,11 @@ class DetalleReclamoViewModel @Inject constructor(
     fun onEvent(event: DetalleReclamoEvent) {
         when(event) {
             DetalleReclamoEvent.OnErrorDismiss -> _state.update { it.copy(error = null) }
-            DetalleReclamoEvent.OnReintentar -> detectingTipoYCargar()
-
+            DetalleReclamoEvent.OnReintentar -> detectarTipoYCargar()
 
             DetalleReclamoEvent.OnAprobar -> cambiarEstado("APROBADO", null)
             is DetalleReclamoEvent.OnRechazar -> cambiarEstado("RECHAZADO", event.motivo)
         }
-    }
-
-    private fun detectingTipoYCargar() {
-        detectarTipoYCargar()
     }
 
     private fun detectarTipoYCargar() {
@@ -71,19 +70,24 @@ class DetalleReclamoViewModel @Inject constructor(
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false, error = result.message) }
                 }
-                is Resource.Loading -> { /* Handled initially */ }
+                is Resource.Loading -> { }
             }
         }
     }
 
     private fun cargarReclamoVida() {
-        // TODO: Implementar llamada al UseCase de Vida
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    error = "Visualización de reclamos de Vida aún no implementada"
-                )
+            _state.update { it.copy(isLoading = true, error = null) }
+            when (val result = getReclamoVidaUseCase(reclamoId)) {
+                is Resource.Success -> {
+                    _state.update {
+                        it.copy(isLoading = false, reclamoVida = result.data)
+                    }
+                }
+                is Resource.Error -> {
+                    _state.update { it.copy(isLoading = false, error = result.message) }
+                }
+                is Resource.Loading -> { }
             }
         }
     }
@@ -92,25 +96,36 @@ class DetalleReclamoViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isUpdating = true) }
 
-            val id = _state.value.reclamoVehiculo?.id ?: return@launch
+            val currentState = _state.value
 
-            val result = cambiarEstadoUseCase(id, nuevoEstado, motivo)
-
-            when (result) {
-                is Resource.Success -> {
-                    _state.update {
-                        it.copy(
-                            isUpdating = false,
-                            reclamoVehiculo = result.data, // Actualizamos la UI con el nuevo estado que viene del backend
-                            exitoOperacion = "Reclamo $nuevoEstado correctamente"
-                        )
-                    }
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isUpdating = false, error = result.message) }
-                }
-                else -> {}
+            if (currentState.tipo == TipoReclamo.VEHICULO) {
+                val id = currentState.reclamoVehiculo?.id ?: return@launch
+                val result = cambiarEstadoVehiculoUseCase(id, nuevoEstado, motivo)
+                procesarResultadoUpdate(result, nuevoEstado)
+            } else {
+                val id = currentState.reclamoVida?.id ?: return@launch
+                val result = cambiarEstadoVidaUseCase(id, nuevoEstado, motivo)
+                procesarResultadoUpdate(result, nuevoEstado)
             }
+        }
+    }
+
+    private fun <T> procesarResultadoUpdate(result: Resource<T>, nuevoEstado: String) {
+        when (result) {
+            is Resource.Success -> {
+                if (_state.value.tipo == TipoReclamo.VEHICULO) cargarReclamoVehiculo() else cargarReclamoVida()
+
+                _state.update {
+                    it.copy(
+                        isUpdating = false,
+                        exitoOperacion = "Reclamo $nuevoEstado correctamente"
+                    )
+                }
+            }
+            is Resource.Error -> {
+                _state.update { it.copy(isUpdating = false, error = result.message) }
+            }
+            else -> {}
         }
     }
 }
