@@ -18,6 +18,7 @@ class ReclamoVehiculoRepositoryImpl @Inject constructor(
         direccion: String,
         tipoIncidente: String,
         fechaIncidente: String,
+        numCuenta: String,
         imagen: File
     ): Resource<ReclamoVehiculo> {
 
@@ -27,6 +28,7 @@ class ReclamoVehiculoRepositoryImpl @Inject constructor(
             descripcion = descripcion,
             direccion = direccion,
             tipoIncidente = tipoIncidente,
+            numCuenta = numCuenta,
             fechaIncidente = fechaIncidente
         )
 
