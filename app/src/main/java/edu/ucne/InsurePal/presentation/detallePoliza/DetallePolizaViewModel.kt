@@ -143,7 +143,7 @@ class DetallePolizaViewModel @Inject constructor(
                     Resource.Error("Error al eliminar: ${e.message}")
                 }
             } else {
-                eliminarVidaUseCase(policyId.removePrefix("VIDA-"))
+                eliminarVidaUseCase(policyId)
             }
 
             if (result is Resource.Success<*>) {
