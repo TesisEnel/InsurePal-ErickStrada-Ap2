@@ -194,6 +194,7 @@ fun ContentDetalleVehiculo(reclamo: ReclamoVehiculo) {
                 InfoRow(Icons.Default.LocationOn, "Ubicación", reclamo.direccion)
                 Spacer(modifier = Modifier.height(12.dp))
                 InfoRow(Icons.Default.CarCrash, "Tipo Incidente", reclamo.tipoIncidente)
+                InfoRow(Icons.Default.CreditCard, "NumCuenta", reclamo.numCuenta)
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -361,7 +362,7 @@ fun EstadoHeader(status: String, motivoRechazo: String?) {
                     )
                     if (statusUpper == "PENDIENTE") {
                         Text(
-                            text = "Tu caso está siendo evaluado por un ajustador.",
+                            text = "Este caso está siendo evaluado por un ajustador.",
                             style = MaterialTheme.typography.bodySmall,
                             color = contentColor.copy(alpha = 0.8f)
                         )
