@@ -20,15 +20,12 @@ class ReclamoViewModel @Inject constructor(
     private val crearReclamoUseCase: CrearReclamoVehiculoUseCase
 ) : ViewModel() {
 
-    private val TAG = "ReclamoViewModel"
 
-    // Estado interno mutable
+
     private val _uiState = MutableStateFlow(ReclamoUiState())
-    // Estado público inmutable
     val uiState: StateFlow<ReclamoUiState> = _uiState.asStateFlow()
 
     init {
-        // CORRECCIÓN: Usar un formato de fecha estricto sin milisegundos para evitar errores 500 en SQL Server
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
         val fechaActual = LocalDateTime.now().format(formatter)
         _uiState.update { it.copy(fechaIncidente = fechaActual) }
@@ -52,12 +49,14 @@ class ReclamoViewModel @Inject constructor(
                 _uiState.update { it.copy(fechaIncidente = event.fecha) }
             }
             is ReclamoEvent.FotoSeleccionada -> {
-                Log.d(TAG, "Foto seleccionada: ${event.archivo.absolutePath} (Size: ${event.archivo.length()} bytes)")
                 _uiState.update { it.copy(fotoEvidencia = event.archivo) }
                 validarFormulario()
             }
             is ReclamoEvent.GuardarReclamo -> {
                 enviarReclamo(event.polizaId, event.usuarioId)
+            }
+            is ReclamoEvent.NumCuentaChanged ->{
+                _uiState.update { it.copy(numCuenta = event.numCuenta) }
             }
             is ReclamoEvent.ErrorVisto -> {
                 _uiState.update { it.copy(error = null) }
@@ -77,10 +76,6 @@ class ReclamoViewModel @Inject constructor(
 
     private fun enviarReclamo(polizaId: String, usuarioId: Int) {
         val estado = _uiState.value
-
-        Log.d(TAG, "===== INICIANDO ENVÍO DE RECLAMO =====")
-        Log.d(TAG, "Datos -> PolizaId: $polizaId, UsuarioId: $usuarioId, Fecha: ${estado.fechaIncidente}")
-
         if (estado.fotoEvidencia == null) {
             _uiState.update { it.copy(error = "Debes seleccionar una foto de evidencia") }
             return
@@ -97,22 +92,20 @@ class ReclamoViewModel @Inject constructor(
                     direccion = estado.direccion,
                     tipoIncidente = estado.tipoIncidente,
                     fechaIncidente = estado.fechaIncidente,
+                    numCuenta = estado.numCuenta,
                     imagen = estado.fotoEvidencia
                 )
 
                 when (result) {
                     is Resource.Success -> {
-                        Log.d(TAG, "¡ÉXITO! Reclamo creado.")
                         _uiState.update { it.copy(isLoading = false, esExitoso = true, error = null) }
                     }
                     is Resource.Error -> {
-                        Log.e(TAG, "ERROR SERVER: ${result.message}")
                         _uiState.update { it.copy(isLoading = false, esExitoso = false, error = result.message) }
                     }
                     is Resource.Loading -> { }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "CRASH APP: ${e.message}")
                 e.printStackTrace()
                 _uiState.update { it.copy(isLoading = false, error = "Error: ${e.message}") }
             }
