@@ -47,13 +47,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.InsurePal.presentation.listaReclamos.UiModels.ReclamoUiItem
 import edu.ucne.InsurePal.presentation.listaReclamos.UiModels.TipoReclamo
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaReclamosScreen(
     viewModel: ListaReclamosViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onReclamoClick: (String) -> Unit
+    // CAMBIO: Ahora recibe ID y TIPO
+    onReclamoClick: (String, String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -86,131 +86,64 @@ fun ListaReclamosScreen(
                     items(state.reclamos) { item ->
                         ReclamoCard(
                             item = item,
-                            onClick = { onReclamoClick(item.id) }
+                            onClick = {
+                                // Enviamos el ID limpio y el Tipo como String
+                                onReclamoClick(item.id, item.tipo.name)
+                            }
                         )
                     }
                 }
             }
-
             state.error?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.error)
-                        .padding(8.dp)
-                        .align(Alignment.BottomCenter)
-                )
+                Text(text = error, color = MaterialTheme.colorScheme.onError, modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.error).padding(8.dp).align(Alignment.BottomCenter))
             }
         }
     }
 }
 
 @Composable
-fun ReclamoCard(
-    item: ReclamoUiItem,
-    onClick: () -> Unit
-) {
+fun ReclamoCard(item: ReclamoUiItem, onClick: () -> Unit) {
     val (statusColor, statusBg) = when (item.status.uppercase()) {
-        "APROBADO" -> Pair(Color(0xFF1B5E20), Color(0xFFC8E6C9)) // Verde
-        "RECHAZADO" -> Pair(Color(0xFFB71C1C), Color(0xFFFFCDD2)) // Rojo
-        else -> Pair(Color(0xFFE65100), Color(0xFFFFE0B2)) // Naranja (Pendiente)
+        "APROBADO" -> Pair(Color(0xFF1B5E20), Color(0xFFC8E6C9))
+        "RECHAZADO" -> Pair(Color(0xFFB71C1C), Color(0xFFFFCDD2))
+        else -> Pair(Color(0xFFE65100), Color(0xFFFFE0B2))
     }
-
     val icono = when(item.tipo) {
         TipoReclamo.VEHICULO -> Icons.Default.CarCrash
         TipoReclamo.VIDA -> Icons.Default.Favorite
         else -> Icons.Default.Warning
     }
 
-    Card(
-        elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
+    Card(elevation = CardDefaults.cardElevation(2.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(icono, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                        }
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(40.dp)) {
+                        Box(contentAlignment = Alignment.Center) { Icon(icono, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer) }
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
-                            text = item.titulo,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Póliza: ${item.polizaId}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text(text = item.titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(text = "Póliza: ${item.polizaId}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-
-                Surface(
-                    color = statusBg,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = item.status,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = statusColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                Surface(color = statusBg, shape = RoundedCornerShape(8.dp)) {
+                    Text(text = item.status, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = statusColor, fontWeight = FontWeight.Bold)
                 }
             }
-
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-
-            Text(
-                text = item.descripcion,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            Text(text = item.descripcion, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Fecha incidente: ${item.fecha}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(text = "Fecha incidente: ${item.fecha}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
 fun EmptyState(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.Warning,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.outline
-        )
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = Icons.Default.Warning, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No tienes reclamos registrados",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(text = "No tienes reclamos registrados", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
