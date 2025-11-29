@@ -17,14 +17,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import edu.ucne.InsurePal.domain.reclamoVehiculo.model.ReclamoVehiculo
+import edu.ucne.InsurePal.domain.reclamoVida.model.ReclamoVida
 import edu.ucne.InsurePal.presentation.listaReclamos.UiModels.TipoReclamo
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleReclamoScreen(
@@ -34,6 +35,13 @@ fun DetalleReclamoScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showRechazoDialog by remember { mutableStateOf(false) }
+
+    // Determinar si el reclamo actual (cualquier tipo) está pendiente
+    val isPendiente = when (state.tipo) {
+        TipoReclamo.VEHICULO -> state.reclamoVehiculo?.status == "PENDIENTE"
+        TipoReclamo.VIDA -> state.reclamoVida?.status == "PENDIENTE"
+        else -> false
+    }
 
     Scaffold(
         topBar = {
@@ -47,7 +55,7 @@ fun DetalleReclamoScreen(
             )
         },
         bottomBar = {
-            if (isAdmin && state.reclamoVehiculo?.status == "PENDIENTE") {
+            if (isAdmin && isPendiente) {
                 AdminActionsBar(
                     isUpdating = state.isUpdating,
                     onAprobar = { viewModel.onEvent(DetalleReclamoEvent.OnAprobar) },
@@ -74,13 +82,15 @@ fun DetalleReclamoScreen(
                     TipoReclamo.VEHICULO -> {
                         state.reclamoVehiculo?.let { reclamo ->
                             ContentDetalleVehiculo(reclamo)
-                        } ?: EmptyView("No se encontraron datos del reclamo.")
+                        } ?: EmptyView("No se encontraron datos del reclamo de vehículo.")
                     }
                     TipoReclamo.VIDA -> {
-                        EmptyView("La visualización de reclamos de Vida está en construcción.")
+                        state.reclamoVida?.let { reclamo ->
+                            ContentDetalleVida(reclamo)
+                        } ?: EmptyView("No se encontraron datos del reclamo de vida.")
                     }
                     TipoReclamo.OTRO -> {
-                        EmptyView("La visualización de reclamos de Otro está en construcción.")
+                        EmptyView("Tipo de reclamo no soportado.")
                     }
                 }
             }
@@ -126,60 +136,9 @@ fun ContentDetalleVehiculo(reclamo: ReclamoVehiculo) {
             motivoRechazo = reclamo.motivoRechazo
         )
 
-        Text("Evidencia", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text("Evidencia Fotográfica", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp),
-            elevation = CardDefaults.cardElevation(2.dp)
-        ) {
-            if (!imageUrl.isNullOrBlank()) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Evidencia del accidente",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        }
-                    },
-                    error = {
-                        Box(
-                            Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.errorContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    Icons.Default.BrokenImage,
-                                    contentDescription = "Error",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                                Text(
-                                    "Error al cargar imagen",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                )
-            } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.ImageNotSupported, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
-                        Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
+        DocumentoCard(url = imageUrl, descripcion = "Evidencia del accidente")
 
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -194,7 +153,8 @@ fun ContentDetalleVehiculo(reclamo: ReclamoVehiculo) {
                 InfoRow(Icons.Default.LocationOn, "Ubicación", reclamo.direccion)
                 Spacer(modifier = Modifier.height(12.dp))
                 InfoRow(Icons.Default.CarCrash, "Tipo Incidente", reclamo.tipoIncidente)
-                InfoRow(Icons.Default.CreditCard, "NumCuenta", reclamo.numCuenta)
+                Spacer(modifier = Modifier.height(12.dp))
+                InfoRow(Icons.Default.CreditCard, "Cta. Depósito", reclamo.numCuenta)
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -231,6 +191,158 @@ fun ContentDetalleVehiculo(reclamo: ReclamoVehiculo) {
         }
 
         Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+fun ContentDetalleVida(reclamo: ReclamoVida) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        EstadoHeader(
+            status = reclamo.status,
+            motivoRechazo = reclamo.motivoRechazo
+        )
+
+        Text("Documentación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+        DocumentoCard(url = reclamo.actaDefuncionUrl, descripcion = "Acta de Defunción")
+
+        if (reclamo.identificacionUrl != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            DocumentoCard(url = reclamo.identificacionUrl, descripcion = "Identificación")
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Información del Deceso", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                InfoRow(Icons.Default.Person, "Asegurado", reclamo.nombreAsegurado)
+                Spacer(modifier = Modifier.height(12.dp))
+                InfoRow(Icons.Default.Event, "Fecha Fallecimiento", reclamo.fechaFallecimiento.take(10))
+                Spacer(modifier = Modifier.height(12.dp))
+                InfoRow(Icons.Default.MedicalServices, "Causa", reclamo.causaMuerte)
+                Spacer(modifier = Modifier.height(12.dp))
+                InfoRow(Icons.Default.Place, "Lugar", reclamo.lugarFallecimiento)
+                Spacer(modifier = Modifier.height(12.dp))
+                InfoRow(Icons.Default.AccountBalance, "Cta. Beneficiario", reclamo.numCuenta)
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                Text("Observaciones", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = reclamo.descripcion,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.HealthAndSafety,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text("Póliza de Vida", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(reclamo.polizaId, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+fun DocumentoCard(url: String?, descripcion: String) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        if (!url.isNullOrBlank()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = descripcion,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    },
+                    error = {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.errorContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.BrokenImage,
+                                    contentDescription = "Error",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    "Error al cargar documento",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                )
+
+                Surface(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = descripcion,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Description, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                    Text("Documento no disponible", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
     }
 }
 
