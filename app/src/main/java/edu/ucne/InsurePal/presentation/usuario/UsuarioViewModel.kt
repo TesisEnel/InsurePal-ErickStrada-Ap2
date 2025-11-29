@@ -123,7 +123,11 @@ class UsuarioViewModel @Inject constructor(
                         is Resource.Error -> {
                             _state.update { it.copy(userMessage = "Error al registrar el usuario") }
                         }
-                        else -> {}
+                        is Resource.Loading -> {
+                            _state.update {
+                                it.copy(isLoading = true)
+                            }
+                        }
                     }
                 }
             }
