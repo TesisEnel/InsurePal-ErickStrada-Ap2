@@ -8,6 +8,7 @@ import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRespons
 import edu.ucne.InsurePal.data.remote.polizas.vida.SeguroVidaRequest
 import edu.ucne.InsurePal.data.remote.polizas.vida.SeguroVidaResponse
 import edu.ucne.InsurePal.data.remote.reclamoVehiculo.ReclamoResponse
+import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaResponse
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioRequest
 import edu.ucne.InsurePal.data.remote.usuario.dto.UsuarioResponse
 import edu.ucne.InsurePal.domain.pago.model.EstadoPago
@@ -17,6 +18,7 @@ import edu.ucne.InsurePal.domain.polizas.vehiculo.model.ModeloVehiculo
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
 import edu.ucne.InsurePal.domain.reclamoVehiculo.model.ReclamoVehiculo
+import edu.ucne.InsurePal.domain.reclamoVida.model.ReclamoVida
 import edu.ucne.InsurePal.domain.usuario.model.Usuario
 import java.time.LocalDateTime
 
@@ -146,5 +148,32 @@ fun ReclamoResponse.toDomain(): ReclamoVehiculo {
 
 
 fun List<ReclamoResponse>.toDomain(): List<ReclamoVehiculo> {
+    return this.map { it.toDomain() }
+}
+
+fun ReclamoVidaResponse.toDomain(): ReclamoVida {
+    return ReclamoVida(
+        id = id,
+        folio = folio,
+        polizaId = polizaId,
+        usuarioId = usuarioId,
+        nombreAsegurado = nombreAsegurado,
+        descripcion = descripcion,
+        lugarFallecimiento = lugarFallecimiento,
+        causaMuerte = causaMuerte,
+        fechaFallecimiento = fechaFallecimiento,
+
+        numCuenta = numCuenta ?: "",
+
+        actaDefuncionUrl = actaDefuncionUrl,
+        identificacionUrl = identificacionUrl,
+
+        status = status,
+        motivoRechazo = motivoRechazo,
+        fechaCreacion = fechaCreacion
+    )
+}
+
+fun List<ReclamoVidaResponse>.toDomain(): List<ReclamoVida> {
     return this.map { it.toDomain() }
 }
