@@ -1,6 +1,6 @@
 package edu.ucne.InsurePal.domain.reclamoVehiculo.model
 
-class ReclamoVehiculo (
+data class ReclamoVehiculo (
     val id: String,
     val folio: String?,
     val polizaId: String,
