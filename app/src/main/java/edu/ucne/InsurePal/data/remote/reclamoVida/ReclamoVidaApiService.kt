@@ -11,7 +11,6 @@ interface ReclamoVidaApiService {
     @Multipart
     @POST("api/reclamos-vida")
     suspend fun crearReclamoVida(
-        // Datos de texto
         @Part("PolizaId") polizaId: RequestBody,
         @Part("UsuarioId") usuarioId: RequestBody,
         @Part("NombreAsegurado") nombreAsegurado: RequestBody,
