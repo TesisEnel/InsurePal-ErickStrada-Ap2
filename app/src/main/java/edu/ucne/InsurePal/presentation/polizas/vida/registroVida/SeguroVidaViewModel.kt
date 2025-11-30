@@ -165,7 +165,9 @@ class SeguroVidaViewModel @Inject constructor(
                         it.copy(isLoading = false, errorGlobal = result.message ?: "Error al guardar")
                     }
                 }
-                is Resource.Loading -> { }
+                is Resource.Loading -> {
+                    //manejado al inicio
+                }
             }
         }
     }
