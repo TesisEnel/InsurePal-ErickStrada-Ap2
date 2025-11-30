@@ -2,7 +2,6 @@ package edu.ucne.InsurePal.presentation.polizas.vida.reclamoVida
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,7 +42,8 @@ import java.time.ZoneId
 @Composable
 fun ReclamoVidaScreen(
     viewModel: ReclamoVidaViewModel = hiltViewModel(),
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    onReclamoSuccess: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -55,14 +55,12 @@ fun ReclamoVidaScreen(
 
     LaunchedEffect(state.esExitoso) {
         if (state.esExitoso) {
-            Toast.makeText(context, "Reclamo de vida enviado correctamente", Toast.LENGTH_LONG).show()
-            navigateBack()
+            onReclamoSuccess()
         }
     }
 
     LaunchedEffect(state.error) {
         state.error?.let {
-            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.onEvent(ReclamoVidaEvent.ErrorVisto)
         }
     }
@@ -231,9 +229,8 @@ fun ReclamoVidaScreen(
 
             Button(
                 onClick = {
-                    if (polizaIdInput.isBlank()) {
-                        Toast.makeText(context, "Ingrese el ID de la Póliza", Toast.LENGTH_SHORT).show()
-                    } else {
+                    if (polizaIdInput.isNotBlank()) {
+                        // El usuario actual es 0 aquí porque se determina dentro del ViewModel
                         viewModel.onEvent(ReclamoVidaEvent.GuardarReclamo(polizaIdInput, 0))
                     }
                 },
@@ -416,7 +413,8 @@ fun Context.crearArchivoTemporal(uri: Uri): File? {
 fun ReclamoVidaScreenPreview() {
     InsurePalTheme {
         ReclamoVidaScreen(
-            navigateBack = {}
+            navigateBack = {},
+            onReclamoSuccess = {}
         )
     }
 }
