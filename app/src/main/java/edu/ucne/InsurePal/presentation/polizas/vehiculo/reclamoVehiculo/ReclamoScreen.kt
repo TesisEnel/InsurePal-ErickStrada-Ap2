@@ -1,4 +1,5 @@
 package edu.ucne.InsurePal.presentation.polizas.vehiculo.reclamoVehiculo
+
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -26,12 +27,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import edu.ucne.InsurePal.presentation.pago.formateo.crearArchivoDesdeUri
 import java.io.File
+import java.time.Instant
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,9 @@ fun ReclamoScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
     LaunchedEffect(state.esExitoso) {
         if (state.esExitoso) {
             Toast.makeText(context, "Reclamo enviado correctamente", Toast.LENGTH_LONG).show()
@@ -56,6 +63,28 @@ fun ReclamoScreen(
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.onEvent(ReclamoEvent.ErrorVisto)
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val localDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.of("UTC"))
+                            .toLocalDate()
+                        viewModel.onEvent(ReclamoEvent.FechaIncidenteChanged(localDate.toString()))
+                    }
+                    showDatePicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 
@@ -96,18 +125,20 @@ fun ReclamoScreen(
                 onOptionSelected = { viewModel.onEvent(ReclamoEvent.TipoIncidenteChanged(it)) }
             )
 
-
             OutlinedTextField(
                 value = state.fechaIncidente.take(10),
                 onValueChange = {},
+                readOnly = true,
                 label = { Text("Fecha del suceso") },
                 leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true },
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledBorderColor = MaterialTheme.colorScheme.outline
                 ),
-                enabled = true
+                enabled = false
             )
 
             OutlinedTextField(
@@ -132,7 +163,7 @@ fun ReclamoScreen(
                 leadingIcon = { Icon(Icons.Default.Money, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
+                    keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
                 singleLine = true
