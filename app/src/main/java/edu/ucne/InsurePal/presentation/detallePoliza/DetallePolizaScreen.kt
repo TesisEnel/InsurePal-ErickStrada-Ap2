@@ -280,9 +280,9 @@ fun PolicyInfoCard(state: DetallePolizaUiState) {
             Spacer(modifier = Modifier.height(12.dp))
 
             state.details.forEach { (label, value) ->
-                val valorA_Mostrar = if (label == "Vigencia") formatearFecha(value) else
+                val valorAMostrar = if (label == "Vigencia") formatearFecha(value) else
                     value
-                DetailRow(label, valorA_Mostrar)
+                DetailRow(label, valorAMostrar)
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
