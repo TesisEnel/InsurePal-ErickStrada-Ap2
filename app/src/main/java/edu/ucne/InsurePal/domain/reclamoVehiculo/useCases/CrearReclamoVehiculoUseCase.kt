@@ -5,8 +5,6 @@ import edu.ucne.InsurePal.domain.reclamoVehiculo.model.CrearReclamoVehiculoParam
 import edu.ucne.InsurePal.domain.reclamoVehiculo.model.ReclamoVehiculo
 import edu.ucne.InsurePal.domain.reclamoVehiculo.repository.ReclamoVehiculoRepository
 import jakarta.inject.Inject
-import java.io.File
-
 class CrearReclamoVehiculoUseCase @Inject constructor(
     private val repository: ReclamoVehiculoRepository
 ) {
