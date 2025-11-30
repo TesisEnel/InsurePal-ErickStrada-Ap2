@@ -38,6 +38,8 @@ sealed interface Screen {
 
     @Serializable
     data object SeleccionSeguro : Screen
+    @Serializable
+    data object SolicitudEnviada: Screen
 
     @Serializable
     data class DetallePoliza(
