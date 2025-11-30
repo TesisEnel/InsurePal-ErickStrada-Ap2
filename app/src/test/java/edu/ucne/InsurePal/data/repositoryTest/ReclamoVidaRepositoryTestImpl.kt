@@ -7,8 +7,10 @@ import edu.ucne.InsurePal.data.remote.reclamoVida.ReclamoVidaRepositoryImpl
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaCreateRequest
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaResponse
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaUpdateRequest
+import edu.ucne.InsurePal.domain.reclamoVida.model.CrearReclamoVidaParams
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
@@ -34,6 +36,7 @@ class ReclamoVidaRepositoryImplTest {
     @Test
     fun `crearReclamoVida envia el request correcto y retorna Success`() = runTest {
         val fileMock = mockk<File>()
+        every { fileMock.name } returns "acta_defuncion.pdf"
 
         val fakeResponse = ReclamoVidaResponse(
             id = "REC-001",
@@ -58,11 +61,8 @@ class ReclamoVidaRepositoryImplTest {
             remoteDataSource.crearReclamoVida(any(), any(), any())
         } returns Resource.Success(fakeResponse)
 
-
         val requestSlot = slot<ReclamoVidaCreateRequest>()
-
-
-        val result = repository.crearReclamoVida(
+        val params = CrearReclamoVidaParams(
             polizaId = "POL-123",
             usuarioId = 10,
             nombreAsegurado = "Juan Perez",
@@ -71,13 +71,16 @@ class ReclamoVidaRepositoryImplTest {
             causaMuerte = "Infarto",
             fechaFallecimiento = "2023-11-01",
             numCuenta = "123456789",
-            actaDefuncion = fileMock
+            actaDefuncion = fileMock,
         )
+        val result = repository.crearReclamoVida(params)
+
         coVerify {
             remoteDataSource.crearReclamoVida(capture(requestSlot), fileMock, null)
         }
 
         val capturedRequest = requestSlot.captured
+
         assertEquals("POL-123", capturedRequest.polizaId)
         assertEquals("Infarto", capturedRequest.causaMuerte)
         assertEquals(10, capturedRequest.usuarioId)
