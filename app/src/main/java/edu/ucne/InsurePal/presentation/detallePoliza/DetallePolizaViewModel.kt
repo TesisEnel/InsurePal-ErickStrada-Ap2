@@ -12,6 +12,7 @@ import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.EliminarSeguroVehicul
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.GetVehiculoUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.DeleteSeguroVidaUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.GetSeguroVidaByIdUseCase
+import edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo.formatearMoneda
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -90,7 +91,7 @@ class DetallePolizaViewModel @Inject constructor(
                                 "Placa" to v.placa,
                                 "Chasis" to v.chasis,
                                 "Tipo Cobertura" to v.coverageType,
-                                "Valor Vehículo" to "RD$ ${v.valorMercado}",
+                                "Valor Vehículo" to "RD$ ${formatearMoneda(v.valorMercado)}",
                                 "Vigencia" to (v.expirationDate ?: "Pendiente"),
                             )
                         )
