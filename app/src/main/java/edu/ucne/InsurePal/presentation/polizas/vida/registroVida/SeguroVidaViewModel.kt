@@ -1,7 +1,5 @@
 package edu.ucne.InsurePal.presentation.polizas.vida.registroVida
 
-
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,8 +8,7 @@ import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.CalcularPrimaVidaUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.SaveSeguroVidaUseCase
-
-
+import edu.ucne.InsurePal.domain.polizas.vida.useCases.ValidateSeguroVidaUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -19,11 +16,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class SeguroVidaViewModel @Inject constructor(
-    private val calcularPrima: CalcularPrimaVidaUseCase,
+    private val calcularPrimaUseCase: CalcularPrimaVidaUseCase,
     private val saveSeguroVida: SaveSeguroVidaUseCase,
+    private val validateSeguroVida: ValidateSeguroVidaUseCase,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 
@@ -36,7 +33,6 @@ class SeguroVidaViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.userId.collectLatest { id ->
                 currentUserId = id ?: 0
-                Log.d("SeguroVidaViewModel", "Usuario ID cargado: $currentUserId")
             }
         }
     }
@@ -44,21 +40,42 @@ class SeguroVidaViewModel @Inject constructor(
     fun onEvent(event: SeguroVidaEvent) {
         when(event) {
             is SeguroVidaEvent.OnFechaNacimientoChanged -> {
-                _state.update { it.copy(fechaNacimiento = event.fecha, errorFechaNacimiento = null) }
-                recalcularPrima()
+                _state.update {
+                    val newState = it.copy(fechaNacimiento = event.fecha, errorFechaNacimiento = null)
+                    newState.copy(primaCalculada = calcularPrimaInterna(newState))
+                }
             }
             is SeguroVidaEvent.OnOcupacionChanged -> {
-                _state.update { it.copy(ocupacion = event.ocupacion, errorOcupacion = null) }
-                recalcularPrima()
+                _state.update {
+                    val newState = it.copy(ocupacion = event.ocupacion, errorOcupacion = null)
+                    newState.copy(primaCalculada = calcularPrimaInterna(newState))
+                }
             }
             is SeguroVidaEvent.OnFumadorChanged -> {
-                _state.update { it.copy(esFumador = event.esFumador) }
-                recalcularPrima()
+                _state.update {
+                    val newState = it.copy(esFumador = event.esFumador)
+                    newState.copy(primaCalculada = calcularPrimaInterna(newState))
+                }
             }
             is SeguroVidaEvent.OnMontoCoberturaChanged -> {
                 val limpio = event.monto.filter { it.isDigit() || it == '.' }
-                _state.update { it.copy(montoCobertura = limpio, errorMontoCobertura = null) }
-                recalcularPrima()
+
+                _state.update {
+                    val montoDouble = limpio.toDoubleOrNull() ?: 0.0
+                    val errorMonto = if (montoDouble > 1_000_000) "Máximo 1,000,000" else null
+
+                    val newState = it.copy(
+                        montoCobertura = limpio,
+                        errorMontoCobertura = errorMonto
+                    )
+                    val nuevaPrima = if (errorMonto == null && montoDouble > 0) {
+                        calcularPrimaInterna(newState)
+                    } else {
+                        0.0
+                    }
+
+                    newState.copy(primaCalculada = nuevaPrima)
+                }
             }
             is SeguroVidaEvent.OnNombresChanged -> {
                 _state.update { it.copy(nombres = event.nombres, errorNombres = null) }
@@ -80,7 +97,6 @@ class SeguroVidaViewModel @Inject constructor(
                 _state.update { it.copy(parentesco = event.parentesco, errorParentesco = null) }
             }
             SeguroVidaEvent.OnCotizarClick -> {
-                Log.d("SeguroVidaViewModel", "Botón Cotizar presionado")
                 cotizarSeguro()
             }
             SeguroVidaEvent.OnErrorDismiss -> {
@@ -92,116 +108,82 @@ class SeguroVidaViewModel @Inject constructor(
         }
     }
 
-    private fun recalcularPrima() {
-        val uiState = _state.value
-        val monto = uiState.montoCobertura.toDoubleOrNull() ?: 0.0
+    private fun calcularPrimaInterna(currentState: SeguroVidaUiState): Double {
+        val monto = currentState.montoCobertura.toDoubleOrNull() ?: 0.0
 
-        if (monto > 0 && uiState.fechaNacimiento.length >= 4) {
-            val primaCalculada = calcularPrima(
-                fechaNacimiento = uiState.fechaNacimiento,
-                esFumador = uiState.esFumador,
-                ocupacion = uiState.ocupacion,
+        if (monto > 0 && monto <= 1_000_000 && currentState.fechaNacimiento.length >= 8) {
+            return calcularPrimaUseCase(
+                fechaNacimiento = currentState.fechaNacimiento,
+                esFumador = currentState.esFumador,
+                ocupacion = currentState.ocupacion,
                 montoCobertura = monto
             )
-            _state.update { it.copy(primaCalculada = primaCalculada) }
-        } else {
-            _state.update { it.copy(primaCalculada = 0.0) }
         }
+        return 0.0
     }
 
     private fun cotizarSeguro() {
-        if (!validarFormulario()) {
-            Log.e("SeguroVidaViewModel", "Validación falló. Revisa los campos en rojo.")
+        val s = _state.value
+
+        val validationResult = validateSeguroVida(
+            nombres = s.nombres,
+            cedula = s.cedula,
+            fechaNacimiento = s.fechaNacimiento,
+            ocupacion = s.ocupacion,
+            montoCobertura = s.montoCobertura,
+            nombreBeneficiario = s.nombreBeneficiario,
+            cedulaBeneficiario = s.cedulaBeneficiario,
+            parentesco = s.parentesco
+        )
+
+        if (!validationResult.esValido) {
+            _state.update { it.copy(
+                errorNombres = validationResult.errorNombres,
+                errorCedula = validationResult.errorCedula,
+                errorFechaNacimiento = validationResult.errorFechaNacimiento,
+                errorOcupacion = validationResult.errorOcupacion,
+                errorMontoCobertura = validationResult.errorMontoCobertura,
+                errorNombreBeneficiario = validationResult.errorNombreBeneficiario,
+                errorCedulaBeneficiario = validationResult.errorCedulaBeneficiario,
+                errorParentesco = validationResult.errorParentesco
+            )}
             return
         }
 
         val usuarioFinal = if (currentUserId == 0) 1 else currentUserId
 
-        Log.d("SeguroVidaViewModel", "Iniciando guardado para Usuario: $usuarioFinal")
-
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            val uiState = _state.value
             val nuevoSeguro = SeguroVida(
                 id = "",
                 usuarioId = usuarioFinal,
-                nombresAsegurado = uiState.nombres,
-                cedulaAsegurado = uiState.cedula,
-                fechaNacimiento = uiState.fechaNacimiento,
-                ocupacion = uiState.ocupacion,
-                esFumador = uiState.esFumador,
-                nombreBeneficiario = uiState.nombreBeneficiario,
-                cedulaBeneficiario = uiState.cedulaBeneficiario,
-                parentesco = uiState.parentesco,
-                montoCobertura = uiState.montoCobertura.toDoubleOrNull() ?: 0.0,
-                prima = uiState.primaCalculada,
+                nombresAsegurado = s.nombres,
+                cedulaAsegurado = s.cedula,
+                fechaNacimiento = s.fechaNacimiento,
+                ocupacion = s.ocupacion,
+                esFumador = s.esFumador,
+                nombreBeneficiario = s.nombreBeneficiario,
+                cedulaBeneficiario = s.cedulaBeneficiario,
+                parentesco = s.parentesco,
+                montoCobertura = s.montoCobertura.toDoubleOrNull() ?: 0.0,
+                prima = s.primaCalculada,
                 esPagado = false
             )
 
-            val result = saveSeguroVida(nuevoSeguro)
-
-            when(result) {
+            when(val result = saveSeguroVida(nuevoSeguro)) {
                 is Resource.Success -> {
-                    Log.d("SeguroVidaViewModel", "Guardado Exitoso. ID: ${result.data?.id}")
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            isSuccess = true,
-                            cotizacionIdCreada = result.data?.id
-                        )
+                        it.copy(isLoading = false, isSuccess = true, cotizacionIdCreada = result.data?.id)
                     }
                 }
                 is Resource.Error -> {
-                    Log.e("SeguroVidaViewModel", "Error API: ${result.message}")
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorGlobal = result.message ?: "Error al guardar cotización"
-                        )
+                        it.copy(isLoading = false, errorGlobal = result.message ?: "Error al guardar")
                     }
                 }
-                is Resource.Loading -> {
-                    _state.update {
-                        it.copy(isLoading = true)
-                    }
-                }
+                is Resource.Loading -> { }
             }
         }
-    }
-
-    private fun validarFormulario(): Boolean {
-        val s = _state.value
-        var esValido = true
-
-        val errorNombres = if(s.nombres.isBlank()) "Requerido" else null
-        val errorCedula = if(s.cedula.length != 11) "Debe tener 11 dígitos" else null
-        val errorFecha = if(s.fechaNacimiento.isBlank()) "Requerida" else null
-        val errorOcupacion = if(s.ocupacion.isBlank()) "Seleccione una" else null
-        val errorMonto = if((s.montoCobertura.toDoubleOrNull() ?: 0.0) <= 0) "Monto inválido" else null
-
-
-        val errorNomBen = if(s.nombreBeneficiario.isBlank()) "Requerido" else null
-        val errorCedBen = if(s.cedulaBeneficiario.isBlank()) "Requerido" else null
-        val errorParent = if(s.parentesco.isBlank()) "Requerido" else null
-
-        if (errorNombres != null || errorCedula != null || errorFecha != null ||
-            errorOcupacion != null || errorMonto != null || errorNomBen != null ||
-            errorCedBen != null || errorParent != null) {
-
-            esValido = false
-            _state.update { it.copy(
-                errorNombres = errorNombres,
-                errorCedula = errorCedula,
-                errorFechaNacimiento = errorFecha,
-                errorOcupacion = errorOcupacion,
-                errorMontoCobertura = errorMonto,
-                errorNombreBeneficiario = errorNomBen,
-                errorCedulaBeneficiario = errorCedBen,
-                errorParentesco = errorParent
-            )}
-        }
-
-        return esValido
     }
 }
