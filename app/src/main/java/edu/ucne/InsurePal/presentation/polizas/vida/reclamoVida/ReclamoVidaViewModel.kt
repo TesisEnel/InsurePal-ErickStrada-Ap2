@@ -92,6 +92,10 @@ class ReclamoVidaViewModel @Inject constructor(
     private fun enviarReclamo(polizaId: String) {
         val estado = _uiState.value
 
+        if (estado.isLoading) {
+            return
+        }
+
         if (estado.archivoActa == null) {
             _uiState.update { it.copy(error = "Debes adjuntar el Acta de Defunción") }
             return

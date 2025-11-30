@@ -74,6 +74,10 @@ class ReclamoViewModel @Inject constructor(
     private fun enviarReclamo(polizaId: String, usuarioId: Int) {
         val estado = _uiState.value
 
+        if (estado.isLoading) {
+            return
+        }
+
         if (estado.fotoEvidencia == null) {
             _uiState.update { it.copy(error = "Debes seleccionar una foto de evidencia") }
             return
