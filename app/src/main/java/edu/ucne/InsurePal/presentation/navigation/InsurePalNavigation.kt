@@ -17,6 +17,7 @@ import edu.ucne.InsurePal.presentation.listaReclamos.ListaReclamosScreen
 import edu.ucne.InsurePal.presentation.listaReclamos.detalleReclamo.DetalleReclamoScreen
 import edu.ucne.InsurePal.presentation.pago.PagoScreen
 import edu.ucne.InsurePal.presentation.pago.listaPago.HistorialPagosScreen
+import edu.ucne.InsurePal.presentation.polizas.vehiculo.SolicitudEnviadaScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.cotizacionVehiculo.CotizacionVehiculoScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.registroVehiculo.VehiculoRegistroScreen
 import edu.ucne.InsurePal.presentation.polizas.vehiculo.reclamoVehiculo.ReclamoScreen
@@ -109,11 +110,21 @@ fun InsurePalNavigation() {
         composable<Screen.CotizacionDetalle> {
             CotizacionVehiculoScreen(
                 onNavigateToPayment = { _, _ ->
-                    navController.navigate(Screen.Home) {
-                        popUpTo(Screen.Home) { inclusive = true }
+                    navController.navigate(Screen.SolicitudEnviada) {
+                        popUpTo(Screen.Home) { inclusive = false }
                     }
                 },
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable<Screen.SolicitudEnviada> {
+            SolicitudEnviadaScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
@@ -169,7 +180,12 @@ fun InsurePalNavigation() {
 
         composable<Screen.ReclamoVida> {
             ReclamoVidaScreen(
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
+                onReclamoSuccess = {
+                    navController.navigate(Screen.SolicitudEnviada) {
+                        popUpTo(Screen.Home) { inclusive = false }
+                    }
+                }
             )
         }
 
@@ -232,7 +248,6 @@ fun InsurePalNavigation() {
             ListaReclamosScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onReclamoClick = { reclamoId,tipo ->
-                    // Modo Usuario: isAdmin es false por defecto
                     navController.navigate(Screen.DetalleReclamo(reclamoId,tipo))
                 }
             )
@@ -240,11 +255,15 @@ fun InsurePalNavigation() {
 
         composable<Screen.ReclamoVehiculo> { backStackEntry ->
             val args = backStackEntry.toRoute<Screen.ReclamoVehiculo>()
-
             ReclamoScreen(
                 polizaId = args.polizaId,
                 usuarioId = args.usuarioId,
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
+                onReclamoSuccess = {
+                    navController.navigate(Screen.SolicitudEnviada) {
+                        popUpTo(Screen.Home) { inclusive = false }
+                    }
+                }
             )
         }
 
