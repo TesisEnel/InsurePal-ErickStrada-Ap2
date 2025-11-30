@@ -4,51 +4,47 @@ import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaCreateRequest
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaUpdateRequest
 import edu.ucne.InsurePal.data.toDomain
-
+import edu.ucne.InsurePal.domain.reclamoVida.model.CrearReclamoVidaParams
 import edu.ucne.InsurePal.domain.reclamoVida.model.ReclamoVida
 import edu.ucne.InsurePal.domain.reclamoVida.repository.ReclamoVidaRepository
-import java.io.File
 import javax.inject.Inject
 
 class ReclamoVidaRepositoryImpl @Inject constructor(
     private val remoteDataSource: ReclamoVidaRemoteDataSource
 ) : ReclamoVidaRepository {
 
-    override suspend fun crearReclamoVida(
-        polizaId: String,
-        usuarioId: Int,
-        nombreAsegurado: String,
-        descripcion: String,
-        lugarFallecimiento: String,
-        causaMuerte: String,
-        fechaFallecimiento: String,
-        numCuenta: String,
-        actaDefuncion: File
-    ): Resource<ReclamoVida> {
+    override suspend fun crearReclamoVida(params: CrearReclamoVidaParams): Resource<ReclamoVida> {
 
-        val request = ReclamoVidaCreateRequest(
-            polizaId = polizaId,
-            usuarioId = usuarioId,
-            nombreAsegurado = nombreAsegurado,
-            descripcion = descripcion,
-            lugarFallecimiento = lugarFallecimiento,
-            causaMuerte = causaMuerte,
-            fechaFallecimiento = fechaFallecimiento,
-            numCuenta = numCuenta
+        val requestApi = ReclamoVidaCreateRequest(
+            polizaId = params.polizaId,
+            usuarioId = params.usuarioId,
+            nombreAsegurado = params.nombreAsegurado,
+            descripcion = params.descripcion,
+            lugarFallecimiento = params.lugarFallecimiento,
+            causaMuerte = params.causaMuerte,
+            fechaFallecimiento = params.fechaFallecimiento,
+            numCuenta = params.numCuenta
         )
 
-        val result = remoteDataSource.crearReclamoVida(request, actaDefuncion, null)
+        val result = remoteDataSource.crearReclamoVida(
+            request = requestApi,
+            archivoActa = params.actaDefuncion,
+            archivoIdentificacion = null
+        )
 
         return when (result) {
             is Resource.Success -> {
-                Resource.Success(result.data!!.toDomain())
+                Resource.Success(result.data?.toDomain())
             }
             is Resource.Error -> {
-                Resource.Error(result.message ?: "Error desconocido al crear reclamo de vida")
+                Resource.Error(result.message ?: "Ha ocurrido un error desconocido")
             }
-            is Resource.Loading -> Resource.Loading()
+            is Resource.Loading -> {
+                Resource.Loading()
+            }
         }
     }
+
 
     override suspend fun cambiarEstadoReclamoVida(
         reclamoId: String,
