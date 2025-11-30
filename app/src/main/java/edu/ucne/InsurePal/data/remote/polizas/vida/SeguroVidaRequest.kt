@@ -15,5 +15,7 @@ data class SeguroVidaRequest(
     val parentesco: String,
 
     val montoCobertura: Double,
-    val prima: Double
+    val prima: Double,
+    val esPagado: Boolean,
+    val fechaPago: String?
 )
