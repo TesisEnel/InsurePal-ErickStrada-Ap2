@@ -103,7 +103,7 @@ class PagoViewModel @Inject constructor(
 
             val vidaActualizada = vidaActual.copy(
                 esPagado = true,
-                fechaPago = LocalDate.now().toString(),
+                fechaPago = LocalDate.now().plusMonths(1).toString(),
             )
 
             updateSeguroVidaUseCase(id, vidaActualizada)
@@ -119,7 +119,7 @@ class PagoViewModel @Inject constructor(
             val vehiculoActualizado = vehiculoActual.copy(
                 status = "Activo",
                 esPagado = true,
-                fechaPago = LocalDate.now().toString(),
+                fechaPago = LocalDate.now().plusMonths(1).toString(),
                 expirationDate = LocalDate.now().plusMonths(1).toString()
             )
 
