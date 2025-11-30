@@ -166,7 +166,7 @@ class SeguroVidaViewModel @Inject constructor(
                     }
                 }
                 is Resource.Loading -> {
-                    //manejado al inicio
+                    _state.update { it.copy(isLoading = true) }
                 }
             }
         }
