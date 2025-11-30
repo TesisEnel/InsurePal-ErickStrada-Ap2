@@ -92,7 +92,7 @@ class DetallePolizaViewModel @Inject constructor(
                                 "Chasis" to v.chasis,
                                 "Tipo Cobertura" to v.coverageType,
                                 "Valor Vehículo" to "RD$ ${formatearMoneda(v.valorMercado)}",
-                                "Vigencia" to (v.expirationDate ?: "Pendiente"),
+                                "Próximo Pago" to (v.fechaPago ?: "Pendiente"),
                             )
                         )
                     }
@@ -123,7 +123,8 @@ class DetallePolizaViewModel @Inject constructor(
                             "Beneficiario" to v.nombreBeneficiario,
                             "Cédula Beneficiario" to v.cedulaBeneficiario,
                             "Monto Cobertura" to "RD$ ${v.montoCobertura}",
-                            "Ocupación" to v.ocupacion
+                            "Ocupación" to v.ocupacion,
+                            "Próximo Pago" to (v.fechaPago ?: "Pendiente"),
                         )
                     )
                 }
