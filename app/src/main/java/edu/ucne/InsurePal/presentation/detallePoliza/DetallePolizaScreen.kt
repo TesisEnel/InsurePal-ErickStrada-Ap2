@@ -268,7 +268,7 @@ fun PolicyActionsSection(
             Text("Realizar Reclamo")
         }
     }
-    if (!state.isPaid && !isPendingApproval) {
+    if (!isPendingApproval) {
         Button(
             onClick = { onNavigateToPago(state.price, "Pago de ${state.title}") },
             modifier = Modifier.fillMaxWidth(),
@@ -342,7 +342,7 @@ fun PolicyInfoCard(state: DetallePolizaUiState) {
             Spacer(modifier = Modifier.height(12.dp))
 
             state.details.forEach { (label, value) ->
-                val valorAMostrar = if (label == "Vigencia") formatearFecha(value) else
+                val valorAMostrar = if (label == "Próximo Pago") formatearFecha(value) else
                     value
                 DetailRow(label, valorAMostrar)
                 HorizontalDivider(
