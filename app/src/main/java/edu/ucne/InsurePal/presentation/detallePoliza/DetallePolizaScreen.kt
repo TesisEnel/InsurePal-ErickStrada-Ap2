@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Payment
@@ -110,6 +112,7 @@ fun PolicyDetailContent(
     val sheetState = rememberModalBottomSheetState()
 
     val isPendingApproval = state.status == "Cotizando" || state.status == "Pendiente de aprobación"
+    val isRejected = state.status == "Rechazado"
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -139,21 +142,30 @@ fun PolicyDetailContent(
             ) {
                 HeaderCard(state)
 
-                if (isPendingApproval) {
+                if (isRejected) {
+                    RejectedCard(
+                        onAccept = {
+                            onEvent(DetallePolizaEvent.OnEliminarPoliza)
+                        }
+                    )
+                } else if (isPendingApproval) {
                     PendingApprovalCard()
                 }
 
                 PolicyInfoCard(state)
 
                 Spacer(modifier = Modifier.weight(1f))
-                PolicyActionsSection(
-                    state = state,
-                    policyType = policyType,
-                    isPendingApproval = isPendingApproval,
-                    onNavigateToPago = onNavigateToPago,
-                    onNavigateToReclamo = onNavigateToReclamo,
-                    onDeleteClick = { showDeleteDialog = true }
-                )
+
+                if (!isRejected) {
+                    PolicyActionsSection(
+                        state = state,
+                        policyType = policyType,
+                        isPendingApproval = isPendingApproval,
+                        onNavigateToPago = onNavigateToPago,
+                        onNavigateToReclamo = onNavigateToReclamo,
+                        onDeleteClick = { showDeleteDialog = true }
+                    )
+                }
             }
         }
     }
@@ -181,6 +193,55 @@ fun PolicyDetailContent(
     }
 }
 
+
+@Composable
+fun RejectedCard(onAccept: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Block,
+                    contentDescription = "Rechazado",
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Póliza Rechazada",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Su vehículo ha sido rechazado por la administración. Por favor, contacte con soporte para más detalles o intente una nueva solicitud.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onAccept,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Aceptar y Eliminar")
+            }
+        }
+    }
+}
 
 @Composable
 fun PolicyActionsSection(
@@ -307,7 +368,9 @@ fun DeleteConfirmationDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
         }
     )
 }
@@ -367,8 +430,18 @@ fun HeaderCard(state: DetallePolizaUiState) {
                     )
                 }
 
-                val statusContainerColor = if (state.isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                val statusContentColor = if (state.isPaid) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onError
+                // Color dinámico según estado
+                val statusContainerColor = when(state.status) {
+                    "Rechazado" -> MaterialTheme.colorScheme.error
+                    "Cotizando", "Pendiente de aprobación" -> MaterialTheme.colorScheme.tertiary
+                    else -> if (state.isPaid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                }
+
+                val statusContentColor = when(state.status) {
+                    "Rechazado" -> MaterialTheme.colorScheme.onError
+                    "Cotizando", "Pendiente de aprobación" -> MaterialTheme.colorScheme.onTertiary
+                    else -> if (state.isPaid) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onError
+                }
 
                 Surface(
                     color = statusContainerColor,
@@ -405,60 +478,32 @@ fun DetailRow(label: String, value: String) {
     }
 }
 
-
-@Preview(name = "Detalle Vehículo Pendiente", showSystemUi = true)
+// Preview para probar visualmente el estado "Rechazado"
+@Preview(name = "Detalle Vehículo Rechazado", showSystemUi = true)
 @Composable
-fun PolicyDetailVehiclePreview() {
+fun PolicyDetailRejectedPreview() {
     InsurePalTheme {
         PolicyDetailContent(
             state = DetallePolizaUiState(
-                title = "Toyota Corolla 2024",
-                subtitle = "2024 • Rojo",
-                status = "Cotizando",
-                price = 25000.0,
+                title = "Honda Civic 2020",
+                subtitle = "2020 • Azul",
+                status = "Rechazado",
+                price = 20000.0,
                 isPaid = false,
                 coverageType = COBERTURA_FULL,
                 details = mapOf(
-                    "Placa" to "A-458291",
-                    "Chasis" to "8291SKL291",
+                    "Placa" to "A-112233",
+                    "Chasis" to "HONDA12345",
                     "Tipo Cobertura" to COBERTURA_FULL,
-                    "Vigencia" to "Pendiente"
+                    "Vigencia" to "Inactiva"
                 )
             ),
             onEvent = {},
             onNavigateBack = {},
             onNavigateToPago = { _, _ -> },
-            onNavigateToReclamo = { _, _ -> }, // Mock navigation
+            onNavigateToReclamo = { _, _ -> },
             snackbarHostState = remember { SnackbarHostState() },
             policyType = "VEHICULO"
-        )
-    }
-}
-
-@Preview(name = "Detalle Vida Pagado", showSystemUi = true)
-@Composable
-fun PolicyDetailLifePreview() {
-    InsurePalTheme {
-        PolicyDetailContent(
-            state = DetallePolizaUiState(
-                title = "Juan Pérez",
-                subtitle = "Seguro de Vida",
-                status = "Activo",
-                price = 5500.0,
-                isPaid = true,
-                details = mapOf(
-                    "Beneficiario" to "Maria Pérez",
-                    "Cédula Beneficiario" to "402-1111111-1",
-                    "Monto Cobertura" to "RD$ 1,000,000",
-                    "Ocupación" to "Oficinista"
-                )
-            ),
-            onEvent = {},
-            onNavigateBack = {},
-            onNavigateToPago = { _, _ -> },
-            onNavigateToReclamo = { _, _ -> }, // Mock navigation
-            snackbarHostState = remember { SnackbarHostState() },
-            policyType = "VIDA"
         )
     }
 }
