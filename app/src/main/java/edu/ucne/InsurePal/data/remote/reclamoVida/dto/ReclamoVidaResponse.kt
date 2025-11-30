@@ -1,6 +1,10 @@
 package edu.ucne.InsurePal.data.remote.reclamoVida.dto
+data class ReclamoVidaResponse(
 
-data class ReclamoVidaCreateRequest(
+    val id: String,
+
+    val folio: String?,
+
     val polizaId: String,
 
     val usuarioId: Int,
@@ -15,5 +19,15 @@ data class ReclamoVidaCreateRequest(
 
     val fechaFallecimiento: String,
 
-    val numCuenta: String
+    val numCuenta: String?,
+
+    val actaDefuncionUrl: String?,
+
+    val identificacionUrl: String?,
+
+    val status: String,
+
+    val motivoRechazo: String?,
+
+    val fechaCreacion: String
 )
