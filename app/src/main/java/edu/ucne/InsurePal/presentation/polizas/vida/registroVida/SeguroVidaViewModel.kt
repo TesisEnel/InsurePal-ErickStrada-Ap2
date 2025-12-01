@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.local.UserPreferences
 import edu.ucne.InsurePal.domain.polizas.vida.model.SeguroVida
+import edu.ucne.InsurePal.domain.polizas.vida.model.ValidateSeguroVidaParams
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.CalcularPrimaVidaUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.SaveSeguroVidaUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.ValidateSeguroVidaUseCase
@@ -106,18 +107,19 @@ class SeguroVidaViewModel @Inject constructor(
     }
 
     private fun cotizarSeguro() {
-        val s = _state.value
-
-        val validationResult = validateSeguroVida(
-            nombres = s.nombres,
-            cedula = s.cedula,
-            fechaNacimiento = s.fechaNacimiento,
-            ocupacion = s.ocupacion,
-            montoCobertura = s.montoCobertura,
-            nombreBeneficiario = s.nombreBeneficiario,
-            cedulaBeneficiario = s.cedulaBeneficiario,
-            parentesco = s.parentesco
+        val state = _state.value
+        val validationParams = ValidateSeguroVidaParams(
+            nombres = state.nombres,
+            cedula = state.cedula,
+            fechaNacimiento = state.fechaNacimiento,
+            ocupacion = state.ocupacion,
+            montoCobertura = state.montoCobertura,
+            nombreBeneficiario = state.nombreBeneficiario,
+            cedulaBeneficiario = state.cedulaBeneficiario,
+            parentesco = state.parentesco
         )
+
+        val validationResult = validateSeguroVida(validationParams)
 
         if (!validationResult.esValido) {
             _state.update { it.copy(
@@ -132,25 +134,23 @@ class SeguroVidaViewModel @Inject constructor(
             )}
             return
         }
-
         val usuarioFinal = if (currentUserId == 0) 1 else currentUserId
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             val nuevoSeguro = SeguroVida(
                 id = "",
                 usuarioId = usuarioFinal,
-                nombresAsegurado = s.nombres,
-                cedulaAsegurado = s.cedula,
-                fechaNacimiento = s.fechaNacimiento,
-                ocupacion = s.ocupacion,
-                esFumador = s.esFumador,
-                nombreBeneficiario = s.nombreBeneficiario,
-                cedulaBeneficiario = s.cedulaBeneficiario,
-                parentesco = s.parentesco,
-                montoCobertura = s.montoCobertura.toDoubleOrNull() ?: 0.0,
-                prima = s.primaCalculada,
+                nombresAsegurado = state.nombres,
+                cedulaAsegurado = state.cedula,
+                fechaNacimiento = state.fechaNacimiento,
+                ocupacion = state.ocupacion,
+                esFumador = state.esFumador,
+                nombreBeneficiario = state.nombreBeneficiario,
+                cedulaBeneficiario = state.cedulaBeneficiario,
+                parentesco = state.parentesco,
+                montoCobertura = state.montoCobertura.toDoubleOrNull() ?: 0.0,
+                prima = state.primaCalculada,
                 esPagado = false
             )
 
