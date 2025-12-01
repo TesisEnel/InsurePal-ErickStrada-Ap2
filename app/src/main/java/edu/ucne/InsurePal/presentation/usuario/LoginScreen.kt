@@ -1,4 +1,5 @@
 package edu.ucne.InsurePal.presentation.usuario
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import edu.ucne.InsurePal.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,11 +119,10 @@ fun UsuarioScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Shield,
-            contentDescription = "Logo",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo InsurePal",
+            modifier = Modifier.size(100.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
