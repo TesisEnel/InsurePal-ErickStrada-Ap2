@@ -8,19 +8,14 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ReclamoVidaApiService {
+
     @Multipart
     @POST("api/reclamos-vida")
     suspend fun crearReclamoVida(
-        @Part("PolizaId") polizaId: RequestBody,
-        @Part("UsuarioId") usuarioId: RequestBody,
-        @Part("NombreAsegurado") nombreAsegurado: RequestBody,
-        @Part("Descripcion") descripcion: RequestBody,
-        @Part("LugarFallecimiento") lugarFallecimiento: RequestBody,
-        @Part("CausaMuerte") causaMuerte: RequestBody,
-        @Part("FechaFallecimiento") fechaFallecimiento: RequestBody,
-        @Part("NumCuenta") numCuenta: RequestBody,
+        @PartMap data: Map<String, @JvmSuppressWildcards RequestBody>,
 
         @Part actaDefuncion: MultipartBody.Part,
+
         @Part identificacion: MultipartBody.Part? = null
     ): Response<ReclamoVidaResponse>
 
