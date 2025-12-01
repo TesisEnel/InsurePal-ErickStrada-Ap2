@@ -9,6 +9,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.PartMap
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -17,13 +18,7 @@ interface ReclamosApiService {
     @Multipart
     @POST("api/reclamos")
     suspend fun crearReclamo(
-        @Part("PolizaId") polizaId: RequestBody,
-        @Part("UsuarioId") usuarioId: RequestBody,
-        @Part("Descripcion") descripcion: RequestBody,
-        @Part("Direccion") direccion: RequestBody,
-        @Part("TipoIncidente") tipoIncidente: RequestBody,
-        @Part("FechaIncidente") fechaIncidente: RequestBody,
-        @Part("NumCuenta") numCuenta: RequestBody,
+        @PartMap partMap: Map<String, @JvmSuppressWildcards RequestBody>,
         @Part imagen: MultipartBody.Part
     ): Response<ReclamoResponse>
 
