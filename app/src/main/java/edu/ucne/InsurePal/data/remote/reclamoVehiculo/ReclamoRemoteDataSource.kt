@@ -3,6 +3,7 @@ package edu.ucne.InsurePal.data.remote.reclamoVehiculo
 import edu.ucne.InsurePal.data.Resource
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
@@ -17,26 +18,23 @@ class ReclamoRemoteDataSource @Inject constructor(
         return try {
             val textType = "text/plain".toMediaTypeOrNull()
 
-            val polizaRb = request.polizaId.toRequestBody(textType)
-            val usuarioRb = request.usuarioId.toString().toRequestBody(textType)
-            val descRb = request.descripcion.toRequestBody(textType)
-            val dirRb = request.direccion.toRequestBody(textType)
-            val tipoRb = request.tipoIncidente.toRequestBody(textType)
-            val fechaRb = request.fechaIncidente.toRequestBody(textType)
-            val numCuentaRb = request.numCuenta.toRequestBody(textType)
+            fun toPart(value: String): RequestBody = value.toRequestBody(textType)
 
+            val dataMap = mapOf(
+                "PolizaId" to toPart(request.polizaId),
+                "UsuarioId" to toPart(request.usuarioId.toString()),
+                "Descripcion" to toPart(request.descripcion),
+                "Direccion" to toPart(request.direccion),
+                "TipoIncidente" to toPart(request.tipoIncidente),
+                "FechaIncidente" to toPart(request.fechaIncidente),
+                "NumCuenta" to toPart(request.numCuenta)
+            )
 
             val fileRequest = archivoImagen.asRequestBody("image/*".toMediaTypeOrNull())
             val imagenPart = MultipartBody.Part.createFormData("imagen", archivoImagen.name, fileRequest)
 
             val response = api.crearReclamo(
-                polizaId = polizaRb,
-                usuarioId = usuarioRb,
-                descripcion = descRb,
-                direccion = dirRb,
-                tipoIncidente = tipoRb,
-                fechaIncidente = fechaRb,
-                numCuenta = numCuentaRb,
+                partMap = dataMap,
                 imagen = imagenPart
             )
 
