@@ -37,18 +37,14 @@ import java.util.Locale
 fun RegistroSeguroVidaScreen(
     viewModel: SeguroVidaViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToPago: (String, Double, String) -> Unit
+    onNavigateToHome: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess && state.cotizacionIdCreada != null) {
-            onNavigateToPago(
-                state.cotizacionIdCreada.toString(),
-                state.primaCalculada,
-                "Seguro de Vida - Cobertura ${state.montoCobertura}"
-            )
+            onNavigateToHome()
             viewModel.onEvent(SeguroVidaEvent.OnNavegacionFinalizada)
         }
     }
@@ -333,9 +329,6 @@ fun DatePickerField(
         }
     }
 
-    // Corrección crítica: Se eliminó 'enabled = false'.
-    // Al usar readOnly = true, el campo no permite escribir (teclado no abre),
-    // pero sigue siendo clickeable e interactivo para abrir el diálogo.
     OutlinedTextField(
         value = fechaSeleccionada,
         onValueChange = { },
@@ -348,13 +341,10 @@ fun DatePickerField(
         },
         modifier = Modifier
             .fillMaxWidth()
-            // El InteractionSource del TextField manejará el click gracias a readOnly=true,
-            // pero mantenemos esto por seguridad en versiones antiguas de M3
             .clickable { showDialog = true },
         isError = isError,
         supportingText = errorMessage?.let { { Text(it) } },
-        // Colores predeterminados están bien, no necesitamos forzar colores de "deshabilitado"
-        enabled = true // Valor por defecto, se pone explícito para claridad
+        enabled = true
     )
 }
 
