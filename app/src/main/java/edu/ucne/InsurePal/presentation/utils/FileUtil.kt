@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.formateo
+package edu.ucne.InsurePal.presentation.utils
 
 import android.content.Context
 import android.net.Uri

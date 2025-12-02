@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.formateo
+package edu.ucne.InsurePal.presentation.utils
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

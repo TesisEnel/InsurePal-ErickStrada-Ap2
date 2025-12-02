@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.formateo
+package edu.ucne.InsurePal.presentation.utils
 
 import java.text.NumberFormat
 import java.util.Locale

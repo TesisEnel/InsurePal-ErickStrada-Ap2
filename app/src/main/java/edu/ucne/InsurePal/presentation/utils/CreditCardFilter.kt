@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.formateo
+package edu.ucne.InsurePal.presentation.utils
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
