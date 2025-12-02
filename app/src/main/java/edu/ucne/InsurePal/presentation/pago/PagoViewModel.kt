@@ -33,7 +33,6 @@ class PagoViewModel @Inject constructor(
 
     private val polizaId: String = savedStateHandle["polizaId"] ?: ""
     private val monto: Double = savedStateHandle["monto"] ?: 0.0
-    private val descripcion: String = savedStateHandle["descripcion"] ?: "Pago de Póliza"
 
     init {
         _state.update { it.copy(polizaId = polizaId, montoAPagar = monto) }
@@ -52,7 +51,6 @@ class PagoViewModel @Inject constructor(
 
     private fun realizarPagoDirecto() {
         val uiState = _state.value
-
         if (uiState.numeroTarjeta.isBlank() || uiState.cvv.isBlank()) {
             _state.update { it.copy(mensajeError = "Por favor llene todos los campos") }
             return
@@ -60,30 +58,29 @@ class PagoViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
+            procesarTransaccion(uiState)
+        }
+    }
 
-            val tarjeta = TarjetaCredito(
-                numero = uiState.numeroTarjeta,
-                titular = uiState.titular,
-                fechaVencimiento = uiState.fechaVencimiento,
-                cvv = uiState.cvv
-            )
+    private suspend fun procesarTransaccion(uiState: PagoUiState) {
+        val tarjeta = TarjetaCredito(
+            numero = uiState.numeroTarjeta,
+            titular = uiState.titular,
+            fechaVencimiento = uiState.fechaVencimiento,
+            cvv = uiState.cvv
+        )
 
-            val resultPago = procesarPago(
-                polizaId = uiState.polizaId,
-                monto = uiState.montoAPagar,
-                tarjeta = tarjeta
-            )
+        val resultPago = procesarPago(uiState.polizaId, uiState.montoAPagar, tarjeta)
 
-            when(resultPago) {
-                is Resource.Success -> {
-                    activarPoliza(uiState.polizaId)
-                    _state.update { it.copy(isLoading = false, isSuccess = true) }
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false, mensajeError = resultPago.message) }
-                }
-                is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+        when(resultPago) {
+            is Resource.Success -> {
+                activarPoliza(uiState.polizaId)
+                _state.update { it.copy(isLoading = false, isSuccess = true) }
             }
+            is Resource.Error -> {
+                _state.update { it.copy(isLoading = false, mensajeError = resultPago.message) }
+            }
+            is Resource.Loading -> _state.update { it.copy(isLoading = true) }
         }
     }
 
@@ -96,34 +93,59 @@ class PagoViewModel @Inject constructor(
     }
 
     private suspend fun activarSeguroVida(id: String) {
-        val resultGet = getSeguroVidaUseCase(id)
+        val result = getSeguroVidaUseCase(id)
+        if (result is Resource.Success && result.data != null) {
+            val vida = result.data
 
-        if (resultGet is Resource.Success && resultGet.data != null) {
-            val vidaActual = resultGet.data
-
-            val vidaActualizada = vidaActual.copy(
-                esPagado = true,
-                fechaPago = LocalDate.now().plusMonths(1).toString(),
+            val nuevaExpiracion = calcularNuevaFechaExpiracion(
+                fechaExpiracionStr = vida.fechaPago
             )
 
+            val vidaActualizada = vida.copy(
+                esPagado = true,
+                fechaPago = nuevaExpiracion
+            )
             updateSeguroVidaUseCase(id, vidaActualizada)
         }
     }
 
     private suspend fun activarSeguroVehiculo(id: String) {
-        val resultGet = getVehiculoUseCase(id)
-
-        if (resultGet is Resource.Success && resultGet.data != null) {
-            val vehiculoActual = resultGet.data
-
-            val vehiculoActualizado = vehiculoActual.copy(
-                status = "Activo",
-                esPagado = true,
-                fechaPago = LocalDate.now().plusMonths(1).toString(),
-                expirationDate = LocalDate.now().plusMonths(1).toString()
+        val result = getVehiculoUseCase(id)
+        if (result is Resource.Success && result.data != null) {
+            val vehiculo = result.data
+            val nuevaExpiracion = calcularNuevaFechaExpiracion(
+                fechaExpiracionStr = vehiculo.fechaPago
             )
 
+            val vehiculoActualizado = vehiculo.copy(
+                status = "Activo",
+                esPagado = true,
+                fechaPago = nuevaExpiracion,
+                expirationDate = nuevaExpiracion
+            )
             updateSeguroUseCase(id, vehiculoActualizado)
+        }
+    }
+
+    private fun calcularNuevaFechaExpiracion(fechaExpiracionStr: String?): String {
+        val hoy = LocalDate.now()
+        val fechaExpiracionActual = try {
+            if (!fechaExpiracionStr.isNullOrBlank()) {
+                val fechaLimpia = if (fechaExpiracionStr.length >= 10) {
+                    fechaExpiracionStr.substring(0, 10)
+                } else {
+                    fechaExpiracionStr
+                }
+                LocalDate.parse(fechaLimpia)
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+
+        return if (fechaExpiracionActual != null && !fechaExpiracionActual.isBefore(hoy)) {
+            fechaExpiracionActual.plusMonths(1).toString()
+        } else {
+            hoy.plusMonths(1).toString()
         }
     }
 }
