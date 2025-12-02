@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.ucne.InsurePal.presentation.polizas.ImageSelector
+import edu.ucne.InsurePal.presentation.components.ImageSelector
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 import java.time.Instant
 import java.time.ZoneId
