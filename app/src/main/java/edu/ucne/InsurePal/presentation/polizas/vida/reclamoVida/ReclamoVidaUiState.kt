@@ -8,13 +8,25 @@ data class ReclamoVidaUiState(
     val esExitoso: Boolean = false,
 
     val nombreAsegurado: String = "",
+    val errorNombreAsegurado: String? = null,
+
     val descripcion: String = "",
+    val errorDescripcion: String? = null,
+
     val lugarFallecimiento: String = "",
+    val errorLugarFallecimiento: String? = null,
+
     val causaMuerte: String = "",
+    val errorCausaMuerte: String? = null,
+
     val fechaFallecimiento: String = "",
+    val errorFechaFallecimiento: String? = null,
+
     val numCuenta: String = "",
+    val errorNumCuenta: String? = null,
 
     val archivoActa: File? = null,
+    val errorArchivoActa: String? = null,
 
     val camposValidos: Boolean = false
 )
