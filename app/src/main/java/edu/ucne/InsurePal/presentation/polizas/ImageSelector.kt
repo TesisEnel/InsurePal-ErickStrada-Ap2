@@ -33,15 +33,12 @@ fun ImageSelector(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         uri?.let {
             val file = context.crearArchivoDesdeUri(it)
-            if (file != null) {
-                onImageSelected(file)
-            }
+            if (file != null) onImageSelected(file)
         }
     }
 
@@ -53,58 +50,77 @@ fun ImageSelector(
             .clickable {
                 launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         border = if (isError) BorderStroke(2.dp, MaterialTheme.colorScheme.error) else null
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            if (selectedFile != null) {
-                AsyncImage(
-                    model = selectedFile,
-                    contentDescription = "Imagen seleccionada",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Cambiar",
-                        tint = Color.White
-                    )
-                }
-            } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.PhotoCamera,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "(Obligatorio)",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
+        ImageSelectorContent(selectedFile, isError, label)
+    }
+}
+
+@Composable
+private fun ImageSelectorContent(
+    selectedFile: File?,
+    isError: Boolean,
+    label: String
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (selectedFile != null) {
+            SelectedImageView(selectedFile)
+        } else {
+            EmptyImageView(isError, label)
         }
+    }
+}
+
+@Composable
+private fun SelectedImageView(file: File) {
+    AsyncImage(
+        model = file,
+        contentDescription = "Imagen seleccionada",
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.Crop
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.3f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Cambiar",
+            tint = Color.White
+        )
+    }
+}
+
+@Composable
+private fun EmptyImageView(isError: Boolean, label: String) {
+    val contentColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.PhotoCamera,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = contentColor
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = contentColor
+        )
+        Text(
+            text = "(Obligatorio)",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.error
+        )
     }
 }
