@@ -12,7 +12,9 @@ fun AppDropdown(
     items: List<String>,
     selectedItem: String,
     onItemSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    errorMessage: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -30,7 +32,11 @@ fun AppDropdown(
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            isError = isError,
+            supportingText = if (isError && errorMessage != null) {
+                { Text(text = errorMessage, color = MaterialTheme.colorScheme.error) }
+            } else null
         )
 
         ExposedDropdownMenu(
