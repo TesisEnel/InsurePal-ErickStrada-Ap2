@@ -144,6 +144,7 @@ fun SeguroVidaContent(
                 label = "Ocupación",
                 items = SeguroVidaDefaults.Ocupaciones,
                 selectedItem = state.ocupacion,
+                isError = state.errorOcupacion != null,
                 onItemSelected = { onEvent(SeguroVidaEvent.OnOcupacionChanged(it)) },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -200,6 +201,7 @@ fun SeguroVidaContent(
                         label = "Parentesco",
                         items = SeguroVidaDefaults.Parentescos,
                         selectedItem = state.parentesco,
+                        isError = state.errorParentesco != null,
                         onItemSelected = { onEvent(SeguroVidaEvent.OnParentescoChanged(it)) },
                         modifier = Modifier.fillMaxWidth()
                     )
