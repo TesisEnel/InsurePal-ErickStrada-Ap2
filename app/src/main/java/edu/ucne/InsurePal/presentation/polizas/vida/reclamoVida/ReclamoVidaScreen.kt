@@ -47,241 +47,291 @@ fun ReclamoVidaScreen(
     onReclamoSuccess: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val scrollState = rememberScrollState()
-
     var polizaIdInput by remember { mutableStateOf("") }
     var polizaIdError by remember { mutableStateOf<String?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
 
+    ReclamoEffects(state, viewModel, onReclamoSuccess)
+
+    ReclamoDatePickerDialog(
+        show = showDatePicker,
+        onDismiss = { showDatePicker = false },
+        onDateSelected = { date ->
+            viewModel.onEvent(ReclamoVidaEvent.FechaFallecimientoChanged(date))
+        }
+    )
+
+    Scaffold(
+        topBar = { ReclamoTopBar(navigateBack) }
+    ) { paddingValues ->
+        ReclamoVidaBody(
+            paddingValues = paddingValues,
+            state = state,
+            polizaIdInput = polizaIdInput,
+            polizaIdError = polizaIdError,
+            onPolizaIdChange = {
+                polizaIdInput = it
+                if (polizaIdError != null) polizaIdError = null
+            },
+            onDateClick = { showDatePicker = true },
+            onEvent = viewModel::onEvent,
+            onEnviarClick = {
+                if (polizaIdInput.isBlank()) {
+                    polizaIdError = "El ID de la póliza es obligatorio"
+                } else {
+                    polizaIdError = null
+                    viewModel.onEvent(ReclamoVidaEvent.GuardarReclamo(polizaIdInput, 0))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun ReclamoEffects(
+    state: ReclamoVidaUiState,
+    viewModel: ReclamoVidaViewModel,
+    onReclamoSuccess: () -> Unit
+) {
     LaunchedEffect(state.esExitoso) {
         if (state.esExitoso) {
             onReclamoSuccess()
         }
     }
-
     LaunchedEffect(state.error) {
         state.error?.let {
             viewModel.onEvent(ReclamoVidaEvent.ErrorVisto)
         }
     }
+}
 
-    if (showDatePicker) {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReclamoDatePickerDialog(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    onDateSelected: (String) -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+    if (show) {
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
                         val localDate = Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.of("UTC"))
                             .toLocalDate()
-                        viewModel.onEvent(ReclamoVidaEvent.FechaFallecimientoChanged(localDate.toString()))
+                        onDateSelected(localDate.toString())
                     }
-                    showDatePicker = false
+                    onDismiss()
                 }) { Text("Aceptar") }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = onDismiss) { Text("Cancelar") }
             }
         ) {
             DatePicker(state = datePickerState)
         }
     }
+}
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Reclamo Seguro de Vida") },
-                navigationIcon = {
-                    IconButton(onClick = navigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReclamoTopBar(navigateBack: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = { Text("Reclamo Seguro de Vida") },
+        navigationIcon = {
+            IconButton(onClick = navigateBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
+        }
+    )
+}
+
+@Composable
+private fun ReclamoVidaBody(
+    paddingValues: PaddingValues,
+    state: ReclamoVidaUiState,
+    polizaIdInput: String,
+    polizaIdError: String?,
+    onPolizaIdChange: (String) -> Unit,
+    onDateClick: () -> Unit,
+    onEvent: (ReclamoVidaEvent) -> Unit,
+    onEnviarClick: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Datos de la Póliza",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        OutlinedTextField(
+            value = polizaIdInput,
+            onValueChange = onPolizaIdChange,
+            label = { Text("ID de la Póliza") },
+            placeholder = { Text("Ej: VIDA-102") },
+            leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            isError = polizaIdError != null,
+            supportingText = polizaIdError?.let { { Text(it) } }
+        )
+
+        HorizontalDivider()
+
+        Text(
+            text = "Información del Deceso",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        OutlinedTextField(
+            value = state.nombreAsegurado,
+            onValueChange = { onEvent(ReclamoVidaEvent.NombreAseguradoChanged(it)) },
+            label = { Text("Nombre del Asegurado") },
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            ),
+            isError = state.errorNombreAsegurado != null,
+            supportingText = state.errorNombreAsegurado?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.fechaFallecimiento.take(10),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Fecha de Fallecimiento") },
+            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDateClick() },
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            enabled = false,
+            isError = state.errorFechaFallecimiento != null,
+            supportingText = state.errorFechaFallecimiento?.let { { Text(it) } }
+        )
+
+        CausaMuerteDropdown(
+            selectedOption = state.causaMuerte,
+            onOptionSelected = { onEvent(ReclamoVidaEvent.CausaMuerteChanged(it)) },
+            isError = state.errorCausaMuerte != null,
+            errorMessage = state.errorCausaMuerte
+        )
+
+        OutlinedTextField(
+            value = state.lugarFallecimiento,
+            onValueChange = { onEvent(ReclamoVidaEvent.LugarFallecimientoChanged(it)) },
+            label = { Text("Lugar de Fallecimiento") },
+            placeholder = { Text("Ej: Hospital General, Casa") },
+            leadingIcon = { Icon(Icons.Default.Place, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            ),
+            isError = state.errorLugarFallecimiento != null,
+            supportingText = state.errorLugarFallecimiento?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.numCuenta,
+            onValueChange = { onEvent(ReclamoVidaEvent.NumCuentaChanged(it)) },
+            label = { Text("Cuenta Bancaria (Beneficiario)") },
+            placeholder = { Text("Para depósito de indemnización") },
+            leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            isError = state.errorNumCuenta != null,
+            supportingText = state.errorNumCuenta?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.descripcion,
+            onValueChange = { onEvent(ReclamoVidaEvent.DescripcionChanged(it)) },
+            label = { Text("Descripción / Observaciones") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
+            maxLines = 5,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            ),
+            isError = state.errorDescripcion != null,
+            supportingText = state.errorDescripcion?.let { { Text(it) } }
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        Text(
+            text = "Documentación Requerida",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        DocumentSelector(
+            selectedFile = state.archivoActa,
+            label = "Subir Acta de Defunción",
+            onFileSelected = { file ->
+                onEvent(ReclamoVidaEvent.ActaDefuncionSeleccionada(file))
+            },
+            isError = state.errorArchivoActa != null
+        )
+
+        if (state.errorArchivoActa != null) {
+            Text(
+                text = state.errorArchivoActa,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp)
             )
         }
-    ) { paddingValues ->
-        Column(
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onEnviarClick,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .height(50.dp),
+            enabled = !state.isLoading,
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text(
-                text = "Datos de la Póliza",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            OutlinedTextField(
-                value = polizaIdInput,
-                onValueChange = {
-                    polizaIdInput = it
-                    if (polizaIdError != null) polizaIdError = null
-                },
-                label = { Text("ID de la Póliza") },
-                placeholder = { Text("Ej: VIDA-102") },
-                leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                isError = polizaIdError != null,
-                supportingText = polizaIdError?.let { { Text(it) } }
-            )
-
-            HorizontalDivider()
-
-            Text(
-                text = "Información del Deceso",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            OutlinedTextField(
-                value = state.nombreAsegurado,
-                onValueChange = { viewModel.onEvent(ReclamoVidaEvent.NombreAseguradoChanged(it)) },
-                label = { Text("Nombre del Asegurado") },
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next
-                ),
-                isError = state.errorNombreAsegurado != null,
-                supportingText = state.errorNombreAsegurado?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.fechaFallecimiento.take(10),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Fecha de Fallecimiento") },
-                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true },
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                enabled = false,
-                isError = state.errorFechaFallecimiento != null,
-                supportingText = state.errorFechaFallecimiento?.let { { Text(it) } }
-            )
-
-            CausaMuerteDropdown(
-                selectedOption = state.causaMuerte,
-                onOptionSelected = { viewModel.onEvent(ReclamoVidaEvent.CausaMuerteChanged(it)) },
-                isError = state.errorCausaMuerte != null,
-                errorMessage = state.errorCausaMuerte
-            )
-
-            OutlinedTextField(
-                value = state.lugarFallecimiento,
-                onValueChange = { viewModel.onEvent(ReclamoVidaEvent.LugarFallecimientoChanged(it)) },
-                label = { Text("Lugar de Fallecimiento") },
-                placeholder = { Text("Ej: Hospital General, Casa") },
-                leadingIcon = { Icon(Icons.Default.Place, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Next
-                ),
-                isError = state.errorLugarFallecimiento != null,
-                supportingText = state.errorLugarFallecimiento?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.numCuenta,
-                onValueChange = { viewModel.onEvent(ReclamoVidaEvent.NumCuentaChanged(it)) },
-                label = { Text("Cuenta Bancaria (Beneficiario)") },
-                placeholder = { Text("Para depósito de indemnización") },
-                leadingIcon = { Icon(Icons.Default.AccountBalance, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                isError = state.errorNumCuenta != null,
-                supportingText = state.errorNumCuenta?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.descripcion,
-                onValueChange = { viewModel.onEvent(ReclamoVidaEvent.DescripcionChanged(it)) },
-                label = { Text("Descripción / Observaciones") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done
-                ),
-                isError = state.errorDescripcion != null,
-                supportingText = state.errorDescripcion?.let { { Text(it) } }
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            Text(
-                text = "Documentación Requerida",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            DocumentSelector(
-                selectedFile = state.archivoActa,
-                label = "Subir Acta de Defunción",
-                onFileSelected = { file ->
-                    viewModel.onEvent(ReclamoVidaEvent.ActaDefuncionSeleccionada(file))
-                },
-                isError = state.errorArchivoActa != null
-            )
-
-            if (state.errorArchivoActa != null) {
-                Text(
-                    text = state.errorArchivoActa!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp)
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    if (polizaIdInput.isBlank()) {
-                        polizaIdError = "El ID de la póliza es obligatorio"
-                    } else {
-                        polizaIdError = null
-                        viewModel.onEvent(ReclamoVidaEvent.GuardarReclamo(polizaIdInput, 0))
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !state.isLoading,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Procesando...")
-                } else {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Enviar Reclamo")
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Procesando...")
+            } else {
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Enviar Reclamo")
             }
         }
     }
