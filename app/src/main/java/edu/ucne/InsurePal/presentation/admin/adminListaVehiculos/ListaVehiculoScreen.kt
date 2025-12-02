@@ -257,7 +257,6 @@ fun VehicleItemCard(vehicle: SeguroVehiculo, onClick: () -> Unit) {
 
 @Composable
 fun StatusChip(status: String) {
-    // Uso colores semánticos o personalizados seguros
     val (color, containerColor) = when(status) {
         "Aprobado", "Pendiente de pago" -> Pair(Color(0xFF2E7D32), Color(0xFFE8F5E9)) // Verdes
         "Rechazado" -> Pair(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.errorContainer)
@@ -288,6 +287,8 @@ fun VehicleDetailDialog(
 ) {
     val format = remember { NumberFormat.getCurrencyInstance(Locale.US) }
 
+    val showActions = vehicle.status != "Rechazado" && vehicle.status != "Pendiente de pago" && vehicle.status != "Activo"
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -301,7 +302,6 @@ fun VehicleDetailDialog(
                 DialogHeader()
                 HorizontalDivider()
 
-                // Sección de detalles
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     DetailItemRow("Póliza ID", vehicle.idPoliza)
                     DetailItemRow("Placa", vehicle.placa)
@@ -316,7 +316,12 @@ fun VehicleDetailDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                DialogActions(onReject, onApprove, onDismiss)
+                DialogActions(
+                    onReject = onReject,
+                    onApprove = onApprove,
+                    onDismiss = onDismiss,
+                    showDecisionButtons = showActions
+                )
             }
         }
     }
@@ -332,33 +337,40 @@ fun DialogHeader() {
 }
 
 @Composable
-fun DialogActions(onReject: () -> Unit, onApprove: () -> Unit, onDismiss: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        OutlinedButton(
-            onClick = onReject,
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
-            ),
-            modifier = Modifier.weight(1f)
+fun DialogActions(
+    onReject: () -> Unit,
+    onApprove: () -> Unit,
+    onDismiss: () -> Unit,
+    showDecisionButtons: Boolean
+) {
+    if (showDecisionButtons) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Rechazar")
-        }
+            OutlinedButton(
+                onClick = onReject,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Rechazar")
+            }
 
-        Button(
-            onClick = onApprove,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF4CAF50) // Mantener verde específico para acción de éxito
-            ),
-            modifier = Modifier.weight(1f)
-        ) {
-            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Aprobar")
+            Button(
+                onClick = onApprove,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Aprobar")
+            }
         }
     }
 
@@ -366,10 +378,9 @@ fun DialogActions(onReject: () -> Unit, onApprove: () -> Unit, onDismiss: () -> 
         onClick = onDismiss,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Cancelar / Cerrar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(if (showDecisionButtons) "Cancelar" else "Cerrar", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
-
 @Composable
 fun DetailItemRow(label: String, value: String?) {
     Row(
