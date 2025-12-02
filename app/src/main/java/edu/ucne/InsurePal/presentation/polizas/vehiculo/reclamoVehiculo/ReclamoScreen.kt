@@ -47,11 +47,39 @@ fun ReclamoScreen(
     onReclamoSuccess: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val scrollState = rememberScrollState()
-
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
 
+    ReclamoEffects(state, viewModel, onReclamoSuccess)
+
+    ReclamoDatePickerDialog(
+        show = showDatePicker,
+        onDismiss = { showDatePicker = false },
+        onDateSelected = { date ->
+            viewModel.onEvent(ReclamoEvent.FechaIncidenteChanged(date))
+        }
+    )
+
+    Scaffold(
+        topBar = { ReclamoTopBar(navigateBack) }
+    ) { paddingValues ->
+        ReclamoBody(
+            paddingValues = paddingValues,
+            state = state,
+            onDateClick = { showDatePicker = true },
+            onEvent = viewModel::onEvent,
+            onEnviarClick = {
+                viewModel.onEvent(ReclamoEvent.GuardarReclamo(polizaId, usuarioId))
+            }
+        )
+    }
+}
+
+@Composable
+private fun ReclamoEffects(
+    state: ReclamoUiState,
+    viewModel: ReclamoViewModel,
+    onReclamoSuccess: () -> Unit
+) {
     LaunchedEffect(state.esExitoso) {
         if (state.esExitoso) {
             onReclamoSuccess()
@@ -62,184 +90,197 @@ fun ReclamoScreen(
             viewModel.onEvent(ReclamoEvent.ErrorVisto)
         }
     }
+}
 
-    if (showDatePicker) {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReclamoDatePickerDialog(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    onDateSelected: (String) -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+    if (show) {
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
                         val localDate = Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.of("UTC"))
                             .toLocalDate()
-                        viewModel.onEvent(ReclamoEvent.FechaIncidenteChanged(localDate.toString()))
+                        onDateSelected(localDate.toString())
                     }
-                    showDatePicker = false
+                    onDismiss()
                 }) { Text("Aceptar") }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = onDismiss) { Text("Cancelar") }
             }
         ) {
             DatePicker(state = datePickerState)
         }
     }
+}
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Reportar Siniestro") },
-                navigationIcon = {
-                    IconButton(onClick = navigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.primary
-                )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReclamoTopBar(navigateBack: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = { Text("Reportar Siniestro") },
+        navigationIcon = {
+            IconButton(onClick = navigateBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.primary
+        )
+    )
+}
+
+@Composable
+private fun ReclamoBody(
+    paddingValues: PaddingValues,
+    state: ReclamoUiState,
+    onDateClick: () -> Unit,
+    onEvent: (ReclamoEvent) -> Unit,
+    onEnviarClick: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Detalles del Incidente",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        TipoIncidenteDropdown(
+            selectedOption = state.tipoIncidente,
+            onOptionSelected = { onEvent(ReclamoEvent.TipoIncidenteChanged(it)) },
+            isError = state.errorTipoIncidente != null,
+            errorMessage = state.errorTipoIncidente
+        )
+
+        OutlinedTextField(
+            value = state.fechaIncidente.take(10),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Fecha del suceso") },
+            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDateClick() },
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline
+            ),
+            enabled = false,
+            isError = state.errorFechaIncidente != null,
+            supportingText = state.errorFechaIncidente?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.direccion,
+            onValueChange = { onEvent(ReclamoEvent.DireccionChanged(it)) },
+            label = { Text("Ubicación exacta") },
+            placeholder = { Text("Ej: Av. Independencia esq. Italia") },
+            leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            isError = state.errorDireccion != null,
+            supportingText = state.errorDireccion?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.numCuenta,
+            onValueChange = { onEvent(ReclamoEvent.NumCuentaChanged(it)) },
+            label = { Text("Número de Cuenta") },
+            placeholder = { Text("Aqui depositaremos") },
+            leadingIcon = { Icon(Icons.Default.Money, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            isError = state.errorNumCuenta != null,
+            supportingText = state.errorNumCuenta?.let { { Text(it) } }
+        )
+
+        OutlinedTextField(
+            value = state.descripcion,
+            onValueChange = { onEvent(ReclamoEvent.DescripcionChanged(it)) },
+            label = { Text("Descripción de los hechos") },
+            placeholder = { Text("Describe brevemente cómo ocurrió el accidente...") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
+            maxLines = 5,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            ),
+            isError = state.errorDescripcion != null,
+            supportingText = state.errorDescripcion?.let { { Text(it) } }
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        Text(
+            text = "Evidencia Fotográfica",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        ImageSelector(
+            selectedFile = state.fotoEvidencia,
+            onImageSelected = { file -> onEvent(ReclamoEvent.FotoSeleccionada(file)) },
+            isError = state.errorFotoEvidencia != null
+        )
+
+        if (state.errorFotoEvidencia != null) {
+            Text(
+                text = state.errorFotoEvidencia,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp)
             )
         }
-    ) { paddingValues ->
 
-        Column(
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onEnviarClick,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .height(50.dp),
+            enabled = !state.isLoading,
+            shape = RoundedCornerShape(12.dp)
         ) {
-
-            Text(
-                text = "Detalles del Incidente",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            TipoIncidenteDropdown(
-                selectedOption = state.tipoIncidente,
-                onOptionSelected = { viewModel.onEvent(ReclamoEvent.TipoIncidenteChanged(it)) },
-                isError = state.errorTipoIncidente != null,
-                errorMessage = state.errorTipoIncidente
-            )
-
-            OutlinedTextField(
-                value = state.fechaIncidente.take(10),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Fecha del suceso") },
-                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true },
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline
-                ),
-                enabled = false,
-                isError = state.errorFechaIncidente != null,
-                supportingText = state.errorFechaIncidente?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.direccion,
-                onValueChange = { viewModel.onEvent(ReclamoEvent.DireccionChanged(it)) },
-                label = { Text("Ubicación exacta") },
-                placeholder = { Text("Ej: Av. Independencia esq. Italia") },
-                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                isError = state.errorDireccion != null,
-                supportingText = state.errorDireccion?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.numCuenta,
-                onValueChange = { viewModel.onEvent(ReclamoEvent.NumCuentaChanged(it)) },
-                label = { Text("Número de Cuenta") },
-                placeholder = { Text("Aqui depositaremos") },
-                leadingIcon = { Icon(Icons.Default.Money, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Next
-                ),
-                singleLine = true,
-                isError = state.errorNumCuenta != null,
-                supportingText = state.errorNumCuenta?.let { { Text(it) } }
-            )
-
-            OutlinedTextField(
-                value = state.descripcion,
-                onValueChange = { viewModel.onEvent(ReclamoEvent.DescripcionChanged(it)) },
-                label = { Text("Descripción de los hechos") },
-                placeholder = { Text("Describe brevemente cómo ocurrió el accidente...") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done
-                ),
-                isError = state.errorDescripcion != null,
-                supportingText = state.errorDescripcion?.let { { Text(it) } }
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            Text(
-                text = "Evidencia Fotográfica",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            ImageSelector(
-                selectedFile = state.fotoEvidencia,
-                onImageSelected = { file ->
-                    viewModel.onEvent(ReclamoEvent.FotoSeleccionada(file))
-                },
-                isError = state.errorFotoEvidencia != null
-            )
-
-            if (state.errorFotoEvidencia != null) {
-                Text(
-                    text = state.errorFotoEvidencia!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp)
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
                 )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    viewModel.onEvent(ReclamoEvent.GuardarReclamo(polizaId, usuarioId))
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !state.isLoading,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Enviando...")
-                } else {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Enviar Reclamo")
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Enviando...")
+            } else {
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Enviar Reclamo")
             }
         }
     }
