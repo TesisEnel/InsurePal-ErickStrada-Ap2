@@ -121,6 +121,7 @@ class VehicleListViewModel @Inject constructor(
         var result = list
         if (query.isNotBlank()) {
             result = result.filter {
+                it.idPoliza?.contains(query, ignoreCase = true) == true ||
                 it.placa.contains(query, ignoreCase = true) ||
                         it.marca.contains(query, ignoreCase = true) ||
                         it.modelo.contains(query, ignoreCase = true)
