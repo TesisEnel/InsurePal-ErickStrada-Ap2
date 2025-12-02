@@ -388,19 +388,19 @@ fun PromoBanner() {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Asegura tu mascota",
+                    text = "Asegurate con nosotros",
                     color = MaterialTheme.colorScheme.inverseOnSurface,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = "15% OFF este mes",
+                    text = "Rápido,Sencillo,Simple.",
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
             Icon(
-                imageVector = Icons.Default.Pets,
+                imageVector = Icons.Default.Shield,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.inverseOnSurface,
                 modifier = Modifier.size(48.dp)
@@ -413,6 +413,5 @@ fun PromoBanner() {
 @Composable
 fun InsuranceHomeScreenPreview() {
     InsurePalTheme {
-        // Preview content
     }
 }
