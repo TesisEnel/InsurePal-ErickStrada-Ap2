@@ -113,7 +113,7 @@ class HomeViewModel @Inject constructor(
         return data?.map { v ->
             LifePolicyUi(
                 id = v.id,
-                status = "Activo",
+                status = if (v.esPagado) "Activo" else "Pendiente",
                 insuredName = v.nombresAsegurado,
                 coverageAmount = v.montoCobertura
             )
