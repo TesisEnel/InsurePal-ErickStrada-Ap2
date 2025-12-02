@@ -1,6 +1,5 @@
 package edu.ucne.InsurePal.presentation.polizas.vida.reclamoVida
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +25,6 @@ class ReclamoVidaViewModel @Inject constructor(
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 
-    private val TAG = "ReclamoVidaVM"
     private val _uiState = MutableStateFlow(ReclamoVidaUiState())
     val uiState: StateFlow<ReclamoVidaUiState> = _uiState.asStateFlow()
 
@@ -39,35 +37,27 @@ class ReclamoVidaViewModel @Inject constructor(
     fun onEvent(event: ReclamoVidaEvent) {
         when(event) {
             is ReclamoVidaEvent.NombreAseguradoChanged -> {
-                _uiState.update { it.copy(nombreAsegurado = event.nombre) }
-                validarFormulario()
+                _uiState.update { it.copy(nombreAsegurado = event.nombre, errorNombreAsegurado = null) }
             }
             is ReclamoVidaEvent.DescripcionChanged -> {
-                _uiState.update { it.copy(descripcion = event.descripcion) }
-                validarFormulario()
+                _uiState.update { it.copy(descripcion = event.descripcion, errorDescripcion = null) }
             }
             is ReclamoVidaEvent.LugarFallecimientoChanged -> {
-                _uiState.update { it.copy(lugarFallecimiento = event.lugar) }
-                validarFormulario()
+                _uiState.update { it.copy(lugarFallecimiento = event.lugar, errorLugarFallecimiento = null) }
             }
             is ReclamoVidaEvent.CausaMuerteChanged -> {
-                _uiState.update { it.copy(causaMuerte = event.causa) }
-                validarFormulario()
+                _uiState.update { it.copy(causaMuerte = event.causa, errorCausaMuerte = null) }
             }
             is ReclamoVidaEvent.FechaFallecimientoChanged -> {
-                _uiState.update { it.copy(fechaFallecimiento = event.fecha) }
-                validarFormulario()
+                _uiState.update { it.copy(fechaFallecimiento = event.fecha, errorFechaFallecimiento = null) }
             }
             is ReclamoVidaEvent.NumCuentaChanged -> {
-                _uiState.update { it.copy(numCuenta = event.cuenta) }
-                validarFormulario()
+                _uiState.update { it.copy(numCuenta = event.cuenta, errorNumCuenta = null) }
             }
             is ReclamoVidaEvent.ActaDefuncionSeleccionada -> {
-                _uiState.update { it.copy(archivoActa = event.archivo) }
-                validarFormulario()
+                _uiState.update { it.copy(archivoActa = event.archivo, errorArchivoActa = null) }
             }
             is ReclamoVidaEvent.GuardarReclamo -> {
-                // El usuarioId del evento se ignora, usamos el de preferencias
                 enviarReclamo(event.polizaId)
             }
             ReclamoVidaEvent.ErrorVisto -> {
@@ -76,30 +66,58 @@ class ReclamoVidaViewModel @Inject constructor(
         }
     }
 
-    private fun validarFormulario() {
+    private fun validarFormulario(): Boolean {
         val s = _uiState.value
-        val esValido = s.nombreAsegurado.isNotBlank() &&
-                s.descripcion.isNotBlank() &&
-                s.lugarFallecimiento.isNotBlank() &&
-                s.causaMuerte.isNotBlank() &&
-                s.fechaFallecimiento.isNotBlank() &&
-                s.numCuenta.isNotBlank() &&
-                s.archivoActa != null
+        var esValido = true
 
-        _uiState.update { it.copy(camposValidos = esValido) }
+        val errorNombre = if (s.nombreAsegurado.isBlank()) {
+            esValido = false; "El nombre del asegurado es obligatorio"
+        } else null
+
+        val errorDesc = if (s.descripcion.isBlank()) {
+            esValido = false; "La descripción es obligatoria"
+        } else null
+
+        val errorLugar = if (s.lugarFallecimiento.isBlank()) {
+            esValido = false; "El lugar de fallecimiento es obligatorio"
+        } else null
+
+        val errorCausa = if (s.causaMuerte.isBlank()) {
+            esValido = false; "La causa de muerte es obligatoria"
+        } else null
+
+        val errorFecha = if (s.fechaFallecimiento.isBlank()) {
+            esValido = false; "La fecha es obligatoria"
+        } else null
+
+        val errorCuenta = if (s.numCuenta.isBlank()) {
+            esValido = false; "El número de cuenta es obligatorio"
+        } else null
+
+        val errorActa = if (s.archivoActa == null) {
+            esValido = false; "Debe adjuntar el Acta de Defunción"
+        } else null
+
+        _uiState.update { it.copy(
+            errorNombreAsegurado = errorNombre,
+            errorDescripcion = errorDesc,
+            errorLugarFallecimiento = errorLugar,
+            errorCausaMuerte = errorCausa,
+            errorFechaFallecimiento = errorFecha,
+            errorNumCuenta = errorCuenta,
+            errorArchivoActa = errorActa,
+            camposValidos = esValido
+        )}
+
+        return esValido
     }
 
     private fun enviarReclamo(polizaId: String) {
+        if (!validarFormulario()) return
+
         val estado = _uiState.value
 
-        if (estado.isLoading) {
-            return
-        }
-
-        if (estado.archivoActa == null) {
-            _uiState.update { it.copy(error = "Debes adjuntar el Acta de Defunción") }
-            return
-        }
+        if (estado.isLoading) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -107,12 +125,13 @@ class ReclamoVidaViewModel @Inject constructor(
             try {
                 val userId = userPreferences.userId.first() ?: 0
                 if (userId == 0) {
-                    _uiState.update { it.copy(isLoading = false, error = "No se pudo identificar al usuario. Inicia sesión nuevamente.") }
+                    _uiState.update { it.copy(isLoading = false, error = "No se pudo identificar al usuario.") }
                     return@launch
                 }
+
                 val polizaResult = getSeguroVidaByIdUseCase(polizaId)
                 if (polizaResult is Resource.Error) {
-                    _uiState.update { it.copy(isLoading = false, error = "La póliza '$polizaId' no existe o no se encuentra.") }
+                    _uiState.update { it.copy(isLoading = false, error = "La póliza no existe o no se encuentra.") }
                     return@launch
                 }
 
@@ -125,7 +144,7 @@ class ReclamoVidaViewModel @Inject constructor(
                     causaMuerte = estado.causaMuerte,
                     fechaFallecimiento = estado.fechaFallecimiento,
                     numCuenta = estado.numCuenta,
-                    actaDefuncion = estado.archivoActa,
+                    actaDefuncion = estado.archivoActa!!,
                 )
 
                 val result = crearReclamoVidaUseCase(params)
@@ -135,7 +154,6 @@ class ReclamoVidaViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoading = false, esExitoso = true) }
                     }
                     is Resource.Error -> {
-                        Log.e(TAG, "Error envio: ${result.message}")
                         _uiState.update { it.copy(isLoading = false, error = result.message) }
                     }
                     is Resource.Loading -> {
