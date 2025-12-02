@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.polizas
+package edu.ucne.InsurePal.presentation.components
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -21,7 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import edu.ucne.InsurePal.presentation.pago.formateo.crearArchivoDesdeUri
+import edu.ucne.InsurePal.presentation.utils.crearArchivoDesdeUri
 import java.io.File
 
 @Composable
