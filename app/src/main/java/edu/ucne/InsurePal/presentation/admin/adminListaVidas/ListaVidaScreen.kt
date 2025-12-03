@@ -245,8 +245,8 @@ fun LifeDetailDialog(
 
                 HorizontalDivider()
 
-                DetailItemRow("Póliza ID", "VIDA-${policy.id}")
-                DetailItemRow("Asegurado", policy.nombresAsegurado) // Eliminado apellidosAsegurado
+                DetailItemRow("Póliza ID", policy.id)
+                DetailItemRow("Asegurado", policy.nombresAsegurado)
                 DetailItemRow("Beneficiario", policy.nombreBeneficiario)
                 DetailItemRow("Cédula Ben.", policy.cedulaBeneficiario)
                 DetailItemRow("Ocupación", policy.ocupacion)
