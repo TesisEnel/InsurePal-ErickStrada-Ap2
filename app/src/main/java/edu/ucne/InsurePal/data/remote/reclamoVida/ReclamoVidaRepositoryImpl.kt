@@ -29,7 +29,7 @@ class ReclamoVidaRepositoryImpl @Inject constructor(
         val result = remoteDataSource.crearReclamoVida(
             request = requestApi,
             archivoActa = params.actaDefuncion,
-            archivoIdentificacion = null
+            archivoIdentificacion = params.identificacion
         )
 
         return when (result) {
