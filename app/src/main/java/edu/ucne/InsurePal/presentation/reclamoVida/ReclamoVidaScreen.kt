@@ -297,6 +297,26 @@ private fun ReclamoVidaBody(
             )
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ImageSelector(
+            selectedFile = state.archivoIdentificacion,
+            label = "Subir Identificación de beneficiario (Cédula)",
+            onImageSelected = { file ->
+                onEvent(ReclamoVidaEvent.IdentificacionSeleccionada(file))
+            },
+            isError = state.errorArchivoIdentificacion != null
+        )
+
+        if (state.errorArchivoIdentificacion != null) {
+            Text(
+                text = state.errorArchivoIdentificacion,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
