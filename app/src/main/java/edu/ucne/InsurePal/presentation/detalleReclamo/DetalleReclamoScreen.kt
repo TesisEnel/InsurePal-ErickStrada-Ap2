@@ -26,6 +26,7 @@ import coil.request.ImageRequest
 import edu.ucne.InsurePal.domain.reclamoVehiculo.model.ReclamoVehiculo
 import edu.ucne.InsurePal.domain.reclamoVida.model.ReclamoVida
 import edu.ucne.InsurePal.presentation.UiModels.TipoReclamo
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleReclamoScreen(
@@ -36,7 +37,6 @@ fun DetalleReclamoScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showRechazoDialog by remember { mutableStateOf(false) }
 
-    // Determinar si el reclamo actual (cualquier tipo) está pendiente
     val isPendiente = when (state.tipo) {
         TipoReclamo.VEHICULO -> state.reclamoVehiculo?.status == "PENDIENTE"
         TipoReclamo.VIDA -> state.reclamoVida?.status == "PENDIENTE"
@@ -210,12 +210,10 @@ fun ContentDetalleVida(reclamo: ReclamoVida) {
 
         Text("Documentación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
+        // Acta de Defunción (Obligatorio)
         DocumentoCard(url = reclamo.actaDefuncionUrl, descripcion = "Acta de Defunción")
-
-        if (reclamo.identificacionUrl != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            DocumentoCard(url = reclamo.identificacionUrl, descripcion = "Identificación")
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        DocumentoCard(url = reclamo.identificacionUrl, descripcion = "Identificación (Cédula)")
 
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
