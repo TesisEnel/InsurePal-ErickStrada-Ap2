@@ -28,5 +28,8 @@ data class ReclamoVidaUiState(
     val archivoActa: File? = null,
     val errorArchivoActa: String? = null,
 
+    val archivoIdentificacion: File? = null,
+    val errorArchivoIdentificacion: String? = null,
+
     val camposValidos: Boolean = false
 )
