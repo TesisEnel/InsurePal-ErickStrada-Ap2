@@ -62,6 +62,9 @@ class VehiculoRegistroViewModel @Inject constructor(
                 _state.update { it.copy(modelo = event.modelo, errorModelo = null) }
                 calcularPrecio()
             }
+            is VehiculoEvent.OnImagenChanged -> {
+                _state.update { it.copy(archivoImagen = event.file, errorImagen = null) }
+            }
             is VehiculoEvent.OnAnioChanged -> {
                 _state.update { it.copy(anio = event.anio, errorAnio = null) }
                 calcularPrecio()
@@ -97,6 +100,13 @@ class VehiculoRegistroViewModel @Inject constructor(
             isValid = false; "Debe seleccionar un modelo"
         } else null
 
+
+        val errorImagen = if (currentState.archivoImagen == null) {
+            isValid = false
+            "La foto del vehículo es obligatoria"
+        } else null
+
+
         val errorAnio = if (currentState.anio.isBlank()) {
             isValid = false; "El año es obligatorio"
         } else null
@@ -127,6 +137,7 @@ class VehiculoRegistroViewModel @Inject constructor(
                 errorColor = errorColor,
                 errorPlaca = errorPlaca,
                 errorChasis = errorChasis,
+                errorImagen = errorImagen,
                 errorValorMercado = errorValor
             )
         }
@@ -157,6 +168,7 @@ class VehiculoRegistroViewModel @Inject constructor(
                 anio = uiState.anio,
                 color = uiState.color,
                 placa = uiState.placa,
+                imagenVehiculo = uiState.archivoImagen?.absolutePath,
                 chasis = uiState.chasis,
                 valorMercado = uiState.valorMercado.toDouble(),
                 coverageType = uiState.coverageType,
