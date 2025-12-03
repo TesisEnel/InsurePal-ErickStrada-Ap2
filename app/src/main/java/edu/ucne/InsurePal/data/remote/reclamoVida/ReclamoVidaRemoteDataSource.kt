@@ -4,13 +4,13 @@ import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaCreateRequest
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaResponse
 import edu.ucne.InsurePal.data.remote.reclamoVida.dto.ReclamoVidaUpdateRequest
+import jakarta.inject.Inject
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
-import javax.inject.Inject
 
 class ReclamoVidaRemoteDataSource @Inject constructor(
     private val api: ReclamoVidaApiService
@@ -18,7 +18,7 @@ class ReclamoVidaRemoteDataSource @Inject constructor(
     private val errorNetwork = "Error de conexión con el servidor"
 
     suspend fun crearReclamoVida(
-        request: ReclamoVidaCreateRequest, // ✅ Ya agrupa los textos
+        request: ReclamoVidaCreateRequest,
         archivoActa: File,
         archivoIdentificacion: File?
     ): Resource<ReclamoVidaResponse> {
@@ -37,13 +37,16 @@ class ReclamoVidaRemoteDataSource @Inject constructor(
                 "FechaFallecimiento" to toPart(request.fechaFallecimiento),
                 "NumCuenta" to toPart(request.numCuenta)
             )
-            val actaRequest = archivoActa.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+
+            val actaRequest = archivoActa.asRequestBody("image/*".toMediaTypeOrNull())
             val actaPart = MultipartBody.Part.createFormData("ActaDefuncion", archivoActa.name, actaRequest)
+
             var idPart: MultipartBody.Part? = null
-            if (archivoIdentificacion != null) {
-                val idRequest = archivoIdentificacion.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+            if (archivoIdentificacion != null && archivoIdentificacion.exists()) {
+                val idRequest = archivoIdentificacion.asRequestBody("image/*".toMediaTypeOrNull())
                 idPart = MultipartBody.Part.createFormData("Identificacion", archivoIdentificacion.name, idRequest)
             }
+
             val response = api.crearReclamoVida(
                 data = dataMap,
                 actaDefuncion = actaPart,
@@ -57,6 +60,7 @@ class ReclamoVidaRemoteDataSource @Inject constructor(
                 Resource.Error("HTTP ${response.code()} ${response.message()}")
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             Resource.Error(e.localizedMessage ?: errorNetwork)
         }
     }
