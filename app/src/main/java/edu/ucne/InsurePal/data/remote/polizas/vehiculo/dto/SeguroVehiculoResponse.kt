@@ -12,8 +12,9 @@ data class SeguroVehiculoResponse(
     val chasis: String,
     val valorMercado: Double,
     val coverageType: String,
-    val status: String = "Cotizando",
+    val imagenVehiculo: String? = null,
+    val status: String = "",
     val expirationDate: String? = "",
-    val esPagado : Boolean = false,
+    val esPagado: Boolean = false,
     val fechaPago: String? = null
 )
