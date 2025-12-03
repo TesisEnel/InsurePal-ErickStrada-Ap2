@@ -1,6 +1,6 @@
 package edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto
 
-data class SeguroVehiculoRequest (
+data class SeguroVehiculoRequest(
     val name: String,
     val usuarioId: Int,
     val marca: String,
@@ -11,8 +11,9 @@ data class SeguroVehiculoRequest (
     val chasis: String,
     val valorMercado: Double,
     val coverageType: String,
+    val imagenVehiculo: String? = null,
     val status: String = "Cotizando",
     val expirationDate: String? = "",
-    val esPagado : Boolean = false,
+    val esPagado: Boolean = false,
     val fechaPago: String? = null
 )
