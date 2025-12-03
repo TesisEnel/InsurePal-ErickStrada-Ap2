@@ -25,5 +25,6 @@ data class ReclamoUiState(
     val fotoEvidencia: File? = null,
     val errorFotoEvidencia: String? = null,
 
+
     val camposValidos: Boolean = false
 )
