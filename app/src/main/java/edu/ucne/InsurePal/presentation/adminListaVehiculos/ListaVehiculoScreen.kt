@@ -20,12 +20,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import edu.ucne.InsurePal.domain.polizas.vehiculo.model.SeguroVehiculo
 import java.text.NumberFormat
 import java.util.Locale
@@ -42,7 +47,7 @@ fun VehicleListScreen(
             vehicle = state.selectedVehicle!!,
             onDismiss = { viewModel.onEvent(ListaVehiculoEvent.OnDismissDetail) },
             onApprove = {
-                viewModel.onEvent(ListaVehiculoEvent.OnUpdateStatus(state.selectedVehicle!!, pendiente))
+                viewModel.onEvent(ListaVehiculoEvent.OnUpdateStatus(state.selectedVehicle!!, "Aprobado"))
             },
             onReject = {
                 viewModel.onEvent(ListaVehiculoEvent.OnUpdateStatus(state.selectedVehicle!!, "Rechazado"))
@@ -84,7 +89,7 @@ fun VehicleListContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.background) // Uso del tema
+                .background(MaterialTheme.colorScheme.background)
         ) {
             SearchBar(
                 query = state.searchQuery,
@@ -96,7 +101,6 @@ fun VehicleListContent(
                 onToggleFilter = { onEvent(ListaVehiculoEvent.OnTogglePendingFilter) }
             )
 
-            // Se extrae la lógica de decisión (Loading vs Empty vs List)
             VehicleListContainer(
                 isLoading = state.isLoading,
                 vehicles = state.filteredVehicles,
@@ -217,19 +221,35 @@ fun VehicleItemCard(vehicle: SeguroVehiculo, onClick: () -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.DirectionsCar,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+            // --- MODIFICACIÓN: IMAGEN O ICONO ---
+            if (!vehicle.imagenVehiculo.isNullOrBlank()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(vehicle.imagenVehiculo)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Foto Vehículo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.DirectionsCar,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
             }
+            // ------------------------------------
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -286,8 +306,8 @@ fun VehicleDetailDialog(
     onReject: () -> Unit
 ) {
     val format = remember { NumberFormat.getCurrencyInstance(Locale.US) }
-
-    val showActions = vehicle.status != "Rechazado" && vehicle.status != pendiente && vehicle.status != "Activo"
+    // Modificado para mostrar botones en estados iniciales
+    val showActions = vehicle.status != "Rechazado" && vehicle.status != "Aprobado" && vehicle.status != "Activo"
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -299,6 +319,24 @@ fun VehicleDetailDialog(
                 modifier = Modifier.padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // --- MODIFICACIÓN: IMAGEN EN DETALLE ---
+                if (!vehicle.imagenVehiculo.isNullOrBlank()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(vehicle.imagenVehiculo)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Foto Vehículo Grande",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                // ----------------------------------------
+
                 DialogHeader()
                 HorizontalDivider()
 
@@ -381,6 +419,7 @@ fun DialogActions(
         Text(if (showDecisionButtons) "Cancelar" else "Cerrar", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
+
 @Composable
 fun DetailItemRow(label: String, value: String?) {
     Row(
