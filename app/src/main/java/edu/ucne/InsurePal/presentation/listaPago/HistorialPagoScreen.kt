@@ -57,7 +57,6 @@ fun HistorialPagosScreen(
     HistorialPagosContent(
         state = state,
         onNavigateBack = onNavigateBack,
-        onSincronizar = { viewModel.sincronizar() }
     )
 }
 
@@ -66,7 +65,6 @@ fun HistorialPagosScreen(
 fun HistorialPagosContent(
     state: HistorialPagoUiState,
     onNavigateBack: () -> Unit,
-    onSincronizar: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -78,7 +76,7 @@ fun HistorialPagosContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSincronizar) {
+                    IconButton(onClick = { /* Acción de sincronización */ }) {
                         if (state.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
@@ -247,7 +245,6 @@ fun HistorialPagosContentPreview() {
                 error = null
             ),
             onNavigateBack = {},
-            onSincronizar = {}
         )
     }
 }
@@ -263,7 +260,6 @@ fun HistorialVacioPreview() {
                 error = null
             ),
             onNavigateBack = {},
-            onSincronizar = {}
         )
     }
 }
@@ -279,7 +275,6 @@ fun HistorialErrorPreview() {
                 error = "No hay conexión a internet"
             ),
             onNavigateBack = {},
-            onSincronizar = {}
         )
     }
 }

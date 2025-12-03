@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HistorialViewModel @Inject constructor(
-    private val sincronizar: SincronizarPagosUseCase,
     private val getHistorial: GetHistorialPagosUseCase,
     private val userPreferences: UserPreferences,
 ) : ViewModel() {
@@ -26,46 +26,28 @@ class HistorialViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            userPreferences.userId.collectLatest { id ->
+            try {
+                val id = userPreferences.userId.first { it != null && it > 0 }
 
-                if (id != null && id > 0) {
-                    _state.update { it.copy(usuarioId = id) }
+                _state.update { it.copy(usuarioId = id?:0) }
+                obtenerHistorial(id?:0)
 
-                    obtenerHistorial(id)
-                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "No se pudo obtener el ID de usuario.") }
             }
         }
     }
 
     private fun obtenerHistorial(userId: Int) {
         viewModelScope.launch {
-
             getHistorial(userId)
                 .catch { e ->
-                    _state.update { it.copy(error = e.message ?: "Error desconocido") }
+                    // El error aquí es si la conexión con la base de datos local (DAO) falla.
+                    _state.update { it.copy(error = e.message ?: "Error desconocido al cargar pagos locales") }
                 }
                 .collect { listaPagos ->
                     _state.update { it.copy(pagos = listaPagos) }
                 }
-        }
-    }
-
-    fun sincronizar() {
-        val userId = _state.value.usuarioId
-
-        if (userId == 0) return
-
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            try {
-                sincronizar(userId)
-
-                _state.update { it.copy(isLoading = false, error = null) }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(isLoading = false, error = "Sin conexión para sincronizar")
-                }
-            }
         }
     }
 }

@@ -21,36 +21,23 @@ class PagoRepositoryImpl @Inject constructor(
     private val userPreferences: UserPreferences
 ) : PagoRepository {
 
-    override fun getHistorialPagos(usuarioId: Int): Flow<List<Pago>> {
-        return if (usuarioId == 0) {
-            flow {
-                try {
-                    val result = remoteDataSource.getHistorialRemoto(usuarioId)
+    override fun getHistorialPagos(usuarioId: Int): Flow<List<Pago>> = flow {
+        val result = remoteDataSource.getHistorialRemoto(usuarioId)
 
-                    when (result) {
-                        is Resource.Success -> {
-                            val dtos = result.data ?: emptyList()
-                            val domainList = dtos.map { it.toDomain() }
-                            emit(domainList)
-                        }
-                        is Resource.Error -> {
-                            emit(emptyList())
-                        }
-                        is Resource.Loading -> {
-                            emit(emptyList())
-                        }
-                    }
-                } catch (e: Exception) {
-                    emit(emptyList())
-                }
+        when (result) {
+            is Resource.Success -> {
+                val pagosDomain = result.data?.map { it.toDomain() } ?: emptyList()
+
+                emit(pagosDomain)
             }
-        } else {
-            pagoDao.getPagosPorUsuario(usuarioId).map { entities ->
-                entities.map { it.toDomain() }
+            is Resource.Error -> {
+
+                throw Exception(result.message ?: "Error al cargar pagos remotos")
+            }
+            is Resource.Loading -> {
             }
         }
     }
-
 
     override suspend fun procesarPago(
         polizaId: String,
