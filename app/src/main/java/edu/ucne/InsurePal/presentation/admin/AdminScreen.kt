@@ -30,8 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import java.text.NumberFormat
-import java.util.Locale
+import edu.ucne.InsurePal.presentation.utils.formatearMoneda
 
 @Composable
 fun AdminScreen(
@@ -103,7 +102,7 @@ fun AdminContent(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                FinancialCard(state.totalRevenue, state.totalPolicies)
+                FinancialCard(state.totalRevenue)
 
                 Text("Gestión de Pólizas", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Row(
@@ -161,8 +160,7 @@ fun AdminContent(
 }
 
 @Composable
-fun FinancialCard(amount: Double, totalCount: Int) {
-    val format = NumberFormat.getCurrencyInstance(Locale.US)
+fun FinancialCard(amount: Double) {
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -174,7 +172,7 @@ fun FinancialCard(amount: Double, totalCount: Int) {
         ) {
             Text("Ingresos Totales", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f))
             Text(
-                text = format.format(amount),
+                text = formatearMoneda(amount),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary
@@ -189,7 +187,7 @@ fun FinancialCard(amount: Double, totalCount: Int) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "Generados por $totalCount pólizas",
+                    "Generados este mes",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
