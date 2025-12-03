@@ -85,9 +85,13 @@ object Module {
 
     @Provides
     @Singleton
-    fun provideReclamoVidaApiService(moshi: Moshi): ReclamoVidaApiService {
+    fun provideReclamoVidaApiService(
+        moshi: Moshi,
+        okHttpClient: OkHttpClient
+    ): ReclamoVidaApiService {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(ReclamoVidaApiService::class.java)
