@@ -33,8 +33,9 @@ fun ImageSelector(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             val file = context.crearArchivoDesdeUri(it)
@@ -48,7 +49,7 @@ fun ImageSelector(
             .height(200.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable {
-                launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                launcher.launch("image/*")
             },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         border = if (isError) BorderStroke(2.dp, MaterialTheme.colorScheme.error) else null
