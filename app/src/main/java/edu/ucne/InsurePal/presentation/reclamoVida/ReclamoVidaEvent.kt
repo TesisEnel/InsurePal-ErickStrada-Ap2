@@ -12,7 +12,7 @@ sealed interface ReclamoVidaEvent {
 
     data class ActaDefuncionSeleccionada(val archivo: File) : ReclamoVidaEvent
 
-
+    data class IdentificacionSeleccionada(val archivo: File) : ReclamoVidaEvent
     data class GuardarReclamo(val polizaId: String, val usuarioId: Int) : ReclamoVidaEvent
     data object ErrorVisto : ReclamoVidaEvent
 }
