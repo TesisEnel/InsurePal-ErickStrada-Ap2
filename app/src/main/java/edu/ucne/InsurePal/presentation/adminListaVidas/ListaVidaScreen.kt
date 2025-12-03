@@ -62,7 +62,7 @@ fun ListaVidaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.surfaceContainerLow) // Fondo Material
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
             SearchBar(
                 query = state.searchQuery,
@@ -251,7 +251,6 @@ fun LifeDetailDialog(
                 DetailItemRow("Cédula Ben.", policy.cedulaBeneficiario)
                 DetailItemRow("Ocupación", policy.ocupacion)
                 DetailItemRow("Cobertura", format.format(policy.montoCobertura))
-                DetailItemRow("Prima", format.format(policy.prima))
                 DetailItemRow("Estado", if (policy.esPagado) "Activo / Pagado" else "Pendiente de Pago")
 
                 Spacer(modifier = Modifier.height(24.dp))
