@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.listaPago
+package edu.ucne.InsurePal.presentation.listaPago
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

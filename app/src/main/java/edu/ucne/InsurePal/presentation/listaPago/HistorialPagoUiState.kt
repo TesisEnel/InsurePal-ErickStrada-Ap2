@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.pago.listaPago
+package edu.ucne.InsurePal.presentation.listaPago
 
 import edu.ucne.InsurePal.domain.pago.model.Pago
 
