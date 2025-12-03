@@ -24,7 +24,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.InsurePal.presentation.components.DatePickerField
 import edu.ucne.InsurePal.presentation.components.SectionHeader
-import edu.ucne.InsurePal.presentation.vehiculo.AppDropdown
+import edu.ucne.InsurePal.presentation.components.AppDropdown
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 import java.text.NumberFormat
 import java.util.Locale

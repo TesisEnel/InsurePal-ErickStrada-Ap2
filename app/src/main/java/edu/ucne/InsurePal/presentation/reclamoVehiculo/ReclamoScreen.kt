@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.reclamoVehiculo
+package edu.ucne.InsurePal.presentation.reclamoVehiculo
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,7 +20,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.InsurePal.presentation.components.DatePickerField
 import edu.ucne.InsurePal.presentation.components.ImageSelector
-import edu.ucne.InsurePal.presentation.vehiculo.AppDropdown
+import edu.ucne.InsurePal.presentation.components.AppDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

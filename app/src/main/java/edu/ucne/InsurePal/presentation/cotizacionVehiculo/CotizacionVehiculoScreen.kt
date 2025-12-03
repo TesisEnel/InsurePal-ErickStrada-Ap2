@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo
+package edu.ucne.InsurePal.presentation.cotizacionVehiculo
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*

@@ -12,7 +12,7 @@ import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.EliminarSeguroVehicul
 import edu.ucne.InsurePal.domain.polizas.vehiculo.useCases.GetVehiculoUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.DeleteSeguroVidaUseCase
 import edu.ucne.InsurePal.domain.polizas.vida.useCases.GetSeguroVidaByIdUseCase
-import edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo.formatearMoneda
+import edu.ucne.InsurePal.presentation.cotizacionVehiculo.formatearMoneda
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

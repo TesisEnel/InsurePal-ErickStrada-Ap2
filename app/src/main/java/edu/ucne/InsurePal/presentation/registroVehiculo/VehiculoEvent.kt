@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.registroVehiculo
+package edu.ucne.InsurePal.presentation.registroVehiculo
 
 sealed interface VehiculoEvent {
 

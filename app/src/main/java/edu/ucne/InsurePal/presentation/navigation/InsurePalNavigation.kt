@@ -17,10 +17,10 @@ import edu.ucne.InsurePal.presentation.listaReclamos.ListaReclamosScreen
 import edu.ucne.InsurePal.presentation.detalleReclamo.DetalleReclamoScreen
 import edu.ucne.InsurePal.presentation.pago.PagoScreen
 import edu.ucne.InsurePal.presentation.pago.listaPago.HistorialPagosScreen
-import edu.ucne.InsurePal.presentation.vehiculo.SolicitudEnviadaScreen
-import edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo.CotizacionVehiculoScreen
-import edu.ucne.InsurePal.presentation.vehiculo.registroVehiculo.VehiculoRegistroScreen
-import edu.ucne.InsurePal.presentation.vehiculo.reclamoVehiculo.ReclamoScreen
+import edu.ucne.InsurePal.presentation.components.SolicitudEnviadaScreen
+import edu.ucne.InsurePal.presentation.cotizacionVehiculo.CotizacionVehiculoScreen
+import edu.ucne.InsurePal.presentation.registroVehiculo.VehiculoRegistroScreen
+import edu.ucne.InsurePal.presentation.reclamoVehiculo.ReclamoScreen
 import edu.ucne.InsurePal.presentation.reclamoVida.ReclamoVidaScreen
 import edu.ucne.InsurePal.presentation.registroVida.RegistroSeguroVidaScreen
 import edu.ucne.InsurePal.presentation.usuario.LoginScreen

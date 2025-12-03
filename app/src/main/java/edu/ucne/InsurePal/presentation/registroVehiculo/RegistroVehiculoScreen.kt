@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.registroVehiculo
+package edu.ucne.InsurePal.presentation.registroVehiculo
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.ucne.InsurePal.presentation.vehiculo.AppDropdown
+import edu.ucne.InsurePal.presentation.components.AppDropdown
 import edu.ucne.InsurePal.ui.theme.InsurePalTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

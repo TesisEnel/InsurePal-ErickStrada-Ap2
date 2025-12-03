@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.reclamoVehiculo
+package edu.ucne.InsurePal.presentation.reclamoVehiculo
 
 import java.io.File
 

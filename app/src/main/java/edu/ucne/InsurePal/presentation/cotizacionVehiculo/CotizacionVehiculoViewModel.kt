@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo
+package edu.ucne.InsurePal.presentation.cotizacionVehiculo
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo
+package edu.ucne.InsurePal.presentation.cotizacionVehiculo
 
 data class CotizacionVehiculoUiState(
     val isLoading: Boolean = false,

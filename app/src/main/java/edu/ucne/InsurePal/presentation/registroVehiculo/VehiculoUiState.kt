@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.registroVehiculo
+package edu.ucne.InsurePal.presentation.registroVehiculo
 
 data class VehiculoUiState(
     val isLoading: Boolean = false,

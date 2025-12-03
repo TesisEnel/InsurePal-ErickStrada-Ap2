@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo
+package edu.ucne.InsurePal.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*

@@ -1,4 +1,4 @@
-package edu.ucne.InsurePal.presentation.vehiculo.cotizacionVehiculo
+package edu.ucne.InsurePal.presentation.cotizacionVehiculo
 
 sealed interface CotizacionVehiculoEvent {
     data object OnContinuarPagoClick : CotizacionVehiculoEvent
