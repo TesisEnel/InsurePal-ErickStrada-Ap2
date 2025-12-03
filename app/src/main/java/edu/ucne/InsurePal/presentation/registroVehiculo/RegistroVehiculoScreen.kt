@@ -104,7 +104,7 @@ fun VehiculoRegistroContent(
         // Mensaje de error específico debajo de la imagen si falla la validación
         if (state.errorImagen != null) {
             Text(
-                text = state.errorImagen!!,
+                text = state.errorImagen,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 8.dp)
