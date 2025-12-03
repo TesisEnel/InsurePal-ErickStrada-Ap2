@@ -4,6 +4,12 @@ import edu.ucne.InsurePal.data.Resource
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.MarcaVehiculoDto
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoRequest
 import edu.ucne.InsurePal.data.remote.polizas.vehiculo.dto.SeguroVehiculoResponse
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
@@ -12,7 +18,37 @@ class RemoteDataSource @Inject constructor(
     private val errorNetwork = "Error de conexión con el servidor"
     suspend fun save(request: SeguroVehiculoRequest): Resource<SeguroVehiculoResponse> {
         return try {
-            val response = api.postVehiculo(request)
+            val imagePart: MultipartBody.Part? = request.imagenVehiculo?.let { path ->
+                val file = File(path)
+                if (file.exists()) {
+                    val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                    MultipartBody.Part.createFormData("imagenVehiculo", file.name, reqFile)
+                } else {
+                    null
+                }
+            }
+
+            val textType = "text/plain".toMediaTypeOrNull()
+
+            val dataMap = mutableMapOf<String, RequestBody>().apply {
+                put("name", request.name.toRequestBody(textType))
+                put("usuarioId", request.usuarioId.toString().toRequestBody(textType))
+                put("marca", request.marca.toRequestBody(textType))
+                put("modelo", request.modelo.toRequestBody(textType))
+                put("anio", request.anio.toRequestBody(textType))
+                put("color", request.color.toRequestBody(textType))
+                put("placa", request.placa.toRequestBody(textType))
+                put("chasis", request.chasis.toRequestBody(textType))
+                put("valorMercado", request.valorMercado.toString().toRequestBody(textType))
+                put("coverageType", request.coverageType.toRequestBody(textType))
+                put("status", request.status.toRequestBody(textType))
+
+                request.expirationDate?.let { put("expirationDate", it.toRequestBody(textType)) }
+                request.fechaPago?.let { put("fechaPago", it.toRequestBody(textType)) }
+                put("esPagado", request.esPagado.toString().toRequestBody(textType))
+            }
+
+            val response = api.postVehiculo(imagePart, dataMap)
 
             if (response.isSuccessful) {
                 val body = response.body()
@@ -25,6 +61,7 @@ class RemoteDataSource @Inject constructor(
                 Resource.Error("HTTP ${response.code()} ${response.message()}")
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             Resource.Error(e.localizedMessage ?: errorNetwork)
         }
     }
