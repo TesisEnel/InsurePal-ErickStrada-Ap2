@@ -57,6 +57,9 @@ class ReclamoVidaViewModel @Inject constructor(
             is ReclamoVidaEvent.ActaDefuncionSeleccionada -> {
                 _uiState.update { it.copy(archivoActa = event.archivo, errorArchivoActa = null) }
             }
+            is ReclamoVidaEvent.IdentificacionSeleccionada -> {
+                _uiState.update { it.copy(archivoIdentificacion = event.archivo, errorArchivoIdentificacion = null) }
+            }
             is ReclamoVidaEvent.GuardarReclamo -> {
                 enviarReclamo(event.polizaId)
             }
@@ -98,6 +101,11 @@ class ReclamoVidaViewModel @Inject constructor(
             esValido = false; "Debe adjuntar el Acta de Defunción"
         } else null
 
+        // NUEVA VALIDACIÓN: Identificación obligatoria
+        val errorIdentificacion = if (s.archivoIdentificacion == null) {
+            esValido = false; "Debe adjuntar la Identificación (Cédula)"
+        } else null
+
         _uiState.update { it.copy(
             errorNombreAsegurado = errorNombre,
             errorDescripcion = errorDesc,
@@ -106,6 +114,7 @@ class ReclamoVidaViewModel @Inject constructor(
             errorFechaFallecimiento = errorFecha,
             errorNumCuenta = errorCuenta,
             errorArchivoActa = errorActa,
+            errorArchivoIdentificacion = errorIdentificacion, // Actualizar estado de error
             camposValidos = esValido
         )}
 
@@ -145,6 +154,7 @@ class ReclamoVidaViewModel @Inject constructor(
                     fechaFallecimiento = estado.fechaFallecimiento,
                     numCuenta = estado.numCuenta,
                     actaDefuncion = estado.archivoActa!!,
+                    identificacion = estado.archivoIdentificacion!!
                 )
 
                 val result = crearReclamoVidaUseCase(params)
