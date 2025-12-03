@@ -221,7 +221,6 @@ fun VehicleItemCard(vehicle: SeguroVehiculo, onClick: () -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // --- MODIFICACIÓN: IMAGEN O ICONO ---
             if (!vehicle.imagenVehiculo.isNullOrBlank()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -306,7 +305,6 @@ fun VehicleDetailDialog(
     onReject: () -> Unit
 ) {
     val format = remember { NumberFormat.getCurrencyInstance(Locale.US) }
-    // Modificado para mostrar botones en estados iniciales
     val showActions = vehicle.status != "Rechazado" && vehicle.status != "Aprobado" && vehicle.status != "Activo"
 
     Dialog(onDismissRequest = onDismiss) {
@@ -319,7 +317,6 @@ fun VehicleDetailDialog(
                 modifier = Modifier.padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // --- MODIFICACIÓN: IMAGEN EN DETALLE ---
                 if (!vehicle.imagenVehiculo.isNullOrBlank()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -335,7 +332,6 @@ fun VehicleDetailDialog(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-                // ----------------------------------------
 
                 DialogHeader()
                 HorizontalDivider()
